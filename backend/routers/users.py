@@ -16,7 +16,6 @@ from models.user_model import (
     UserRole,
 )
 
-# from models.class_model import Class, ClassEnrollment, Assignment, AssignmentSubmission
 from services.user_service import get_user_service
 
 router = APIRouter()

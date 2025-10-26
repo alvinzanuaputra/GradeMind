@@ -6,8 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 import { userService, profileService } from "@/services";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import Card from "@/components/Card";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
@@ -47,6 +45,7 @@ function ProfileContent() {
 	const [successMessage, setSuccessMessage] = useState("");
 	const [showPasswordSection, setShowPasswordSection] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const [showImageModal, setShowImageModal] = useState(false);
 
 	useEffect(() => {
 		if (user) {
@@ -286,14 +285,14 @@ function ProfileContent() {
 	};
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 			<main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-white mb-2">
+					<h1 className="text-3xl font-bold text-black mb-2">
 						Edit profil
 					</h1>
-					<p className="text-gray-300">
+					<p className="text-gray-600">
 						Ganti informasi pribadi kamu dan pengaturan
 					</p>
 				</div>
@@ -302,205 +301,206 @@ function ProfileContent() {
 						{successMessage}
 					</div>
 				)}
-				<Card>
-					<div className="mb-6">
-						<h2 className="text-xl font-semibold text-white mb-2">
-							Informasi Profil
-						</h2>
-						<p className="text-sm text-gray-400">
-							Ubah akun kamu & infromasi profil disini
-						</p>
-					</div>
-					<form onSubmit={handleSubmit} className="space-y-6">
-						{errors.general && (
-							<div className="bg-red-900/30 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-sm">
-								{errors.general}
-							</div>
-						)}
-						<div>
-							<div className="flex items-center gap-4">
-								<div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400 shadow-lg bg-gray-700">
-									{profilePicture ? (
-										<Image
-											src={profilePicture}
-											alt="profil default icon"
-											width={80}
-											height={80}
-											className="w-full h-full object-cover"
-											unoptimized
-											onError={(e) => {
-												// Fallback to default icon if image fails to load
-												const target =
-													e.target as HTMLImageElement;
-												target.style.display = "none";
-												if (target.nextElementSibling) {
-													(
-														target.nextElementSibling as HTMLElement
-													).style.display = "flex";
-												}
-											}}
-										/>
-									) : null}
-									<div
-										className="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white text-2xl font-bold"
-										style={{
-											display: profilePicture
-												? "none"
-												: "flex",
-										}}
-									>
-										<UserCircle
-											className="w-16 h-16"
-											weight="bold"
-										/>
-									</div>
-								</div>
-								<div>
-									{/* Hide upload button for OAuth users */}
-									{!user?.is_oauth_user && (
-										<>
-											<button
-												type="button"
-												onClick={handleImageClick}
-												className="px-4 py-2 bg-transparent border border-gray-600 rounded-lg text-white hover:bg-gray-700/50 transition-colors text-sm font-medium flex items-center gap-2"
-											>
-												<Camera
-													className="w-4 h-4"
-													weight="bold"
-												/>
-												Ganti gambar
-											</button>
-											<input
-												ref={fileInputRef}
-												type="file"
-												accept="image/*"
-												onChange={handleImageChange}
-												className="hidden"
-											/>
-											<p className="text-xs text-gray-400 mt-2">
-												JPG, atau PNG. Max size 5MB
-											</p>
-										</>
-									)}
-									{user?.is_oauth_user && (
-										<p className="text-md text-white">
-											Foto profil kamu
-										</p>
-									)}
-								</div>
-							</div>
-						</div>
+				<div className="mb-6 border-t border-gray-300 pt-4">
+					<h2 className="text-xl font-semibold text-black mb-2">
+						Foto Profil
+					</h2>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<Input
-								id="fullName"
-								name="fullName"
-								type="text"
-								label="Nama Lengkap"
-								placeholder="Masukkan nama lengkap"
-								value={formData.fullName}
-								onChange={handleChange}
-								error={errors.fullName}
-								required
-							/>
-							<Input
-								id="username"
-								name="username"
-								type="text"
-								label="Nama Pengguna"
-								placeholder="Masukkan nama pengguna"
-								value={formData.username}
-								onChange={handleChange}
-								error={errors.username}
-								disabled
-							/>
+				</div>
+				<form onSubmit={handleSubmit} className="space-y-6">
+					{errors.general && (
+						<div className="bg-red-900/30 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-sm">
+							{errors.general}
 						</div>
+					)}
+					<div>
+						<div className="flex items-center gap-4">
+							<div
+								className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400 shadow-lg bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+								onClick={() => profilePicture && setShowImageModal(true)}
+								title="Klik untuk melihat foto profil"
+							>
+								{profilePicture ? (
+									<Image
+										src={profilePicture}
+										alt="profil default icon"
+										width={80}
+										height={80}
+										className="w-full h-full object-cover"
+										unoptimized
+										onError={(e) => {
+											// Fallback to default icon if image fails to load
+											const target =
+												e.target as HTMLImageElement;
+											target.style.display = "none";
+											if (target.nextElementSibling) {
+												(
+													target.nextElementSibling as HTMLElement
+												).style.display = "flex";
+											}
+										}}
+									/>
+								) : null}
+								<div
+									className="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white text-2xl font-bold"
+									style={{
+										display: profilePicture
+											? "none"
+											: "flex",
+									}}
+								>
+									<UserCircle
+										className="w-16 h-16"
+										weight="bold"
+									/>
+								</div>
+							</div>
+							<div>
+								{/* Hide upload button for OAuth users */}
+								{!user?.is_oauth_user && (
+									<>
+										<button
+											type="button"
+											onClick={handleImageClick}
+											className="px-4 py-2 bg-transparent border border-black rounded-lg text-black hover:bg-yellow-400 transition-colors text-sm font-medium flex items-center gap-2"
+										>
+											<Camera
+												className="w-4 h-4"
+												weight="bold"
+											/>
+											Ganti gambar
+										</button>
+										<input
+											ref={fileInputRef}
+											type="file"
+											accept="image/*"
+											onChange={handleImageChange}
+											className="hidden"
+										/>
+										<p className="text-xs text-gray-400 mt-2">
+											JPG, atau PNG. Max size 5MB
+										</p>
+									</>
+								)}
+								{user?.is_oauth_user && (
+									<p className="text-md text-black underline font-semibold">
+										Foto profil diatur melalui Oauth
+									</p>
+								)}
+							</div>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<Input
-							id="email"
-							name="email"
-							type="email"
-							label="Alamat Email"
-							placeholder="Masukkan email"
-							value={formData.email}
+							id="fullName"
+							name="fullName"
+							type="text"
+							label="Nama Lengkap"
+							placeholder="Masukkan nama lengkap"
+							value={formData.fullName}
 							onChange={handleChange}
-							error={errors.email}
+							error={errors.fullName}
 							required
 						/>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<Input
-								id="phone"
-								name="phone"
-								type="tel"
-								label="Nomor Telepon"
-								placeholder="Masukkan nomor telepon"
-								value={formData.phone}
-								onChange={handleChange}
-								error={errors.phone}
-							/>
-							<Input
-								id="institution"
-								name="institution"
-								type="text"
-								label="Institusi"
-								placeholder="Masukkan institusi"
-								value={formData.institution}
-								onChange={handleChange}
-								error={errors.institution}
-							/>
-						</div>
-						<div>
-							<label
-								htmlFor="bio"
-								className="block text-sm font-medium text-white mb-2"
-							>
-								Bio
-							</label>
-							<textarea
-								id="bio"
-								name="bio"
-								rows={4}
-								placeholder="Ceritakan tentang diri kamu..."
-								value={formData.bio}
-								onChange={handleChange}
-								className="w-full px-4 py-3 bg-transparent border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors resize-none"
-							/>
-							{errors.bio && (
-								<p className="mt-2 text-sm text-red-400">
-									{errors.bio}
-								</p>
-							)}
-						</div>
-						<div className="flex flex-col sm:flex-row gap-4 pt-4">
-							<Button
-								type="submit"
-								variant="primary"
-								size="lg"
-								isLoading={isLoading}
-								disabled={isLoading}
-							>
-								Simpan Perubahan
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="lg"
-								onClick={handleCancel}
-								disabled={isLoading}
-							>
-								Batal
-							</Button>
-						</div>
-					</form>
-				</Card>
+						<Input
+							id="username"
+							name="username"
+							type="text"
+							label="Nama Pengguna"
+							placeholder="Masukkan nama pengguna"
+							value={formData.username}
+							onChange={handleChange}
+							error={errors.username}
+							disabled
+						/>
+					</div>
+					<Input
+						id="email"
+						name="email"
+						type="email"
+						label="Alamat Email"
+						placeholder="Masukkan email"
+						value={formData.email}
+						onChange={handleChange}
+						error={errors.email}
+						required
+					/>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<Input
+							id="phone"
+							name="phone"
+							type="tel"
+							label="Nomor Telepon"
+							placeholder="Masukkan nomor telepon"
+							value={formData.phone}
+							onChange={handleChange}
+							error={errors.phone}
+						/>
+						<Input
+							id="institution"
+							name="institution"
+							type="text"
+							label="Institusi"
+							placeholder="Masukkan institusi"
+							value={formData.institution}
+							onChange={handleChange}
+							error={errors.institution}
+						/>
+					</div>
+					<div>
+						<label
+							htmlFor="bio"
+							className="block text-sm font-medium text-white mb-2"
+						>
+							Bio
+						</label>
+						<textarea
+							id="bio"
+							name="bio"
+							rows={4}
+							placeholder="Ceritakan tentang diri kamu..."
+							value={formData.bio}
+							onChange={handleChange}
+							className="w-full px-4 py-3 bg-transparent border border-black rounded-lg text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors resize-none"
+						/>
+						{errors.bio && (
+							<p className="mt-2 text-sm text-red-400">
+								{errors.bio}
+							</p>
+						)}
+					</div>
+					<div className="flex flex-col sm:flex-row gap-4 pt-4">
+						<Button
+							type="submit"
+							variant="primary"
+							size="lg"
+							isLoading={isLoading}
+							disabled={isLoading}
+						>
+							Simpan Perubahan
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							size="lg"
+							onClick={handleCancel}
+							disabled={isLoading}
+						>
+							Batal
+						</Button>
+					</div>
+				</form>
+
 
 				{/* Hide password section for OAuth users */}
 				{!user?.is_oauth_user && (
-					<Card className="mt-6">
+					<div className="mt-6 border-t border-gray-300 pt-4">
 						<div className="mb-6">
-							<h2 className="text-xl font-semibold text-white mb-2">
+							<h2 className="text-xl font-semibold text-black mb-2">
 								Ubah Kata Sandi
 							</h2>
-							<p className="text-sm text-gray-400">
+							<p className="text-sm text-gray-600">
 								Perbarui kata sandi untuk menjaga keamanan akun
 								kamu
 							</p>
@@ -583,15 +583,14 @@ function ProfileContent() {
 								</div>
 							</form>
 						)}
-					</Card>
+					</div>
 				)}
-
-				<Card className="mt-6 border-2 border-red-500/30">
+				<div className="mt-6 border-t border-gray-300 pt-4">
 					<div className="mb-4">
 						<h2 className="text-xl font-semibold text-red-400 mb-2">
-							Zona Berbahaya
+							Hapus Akun
 						</h2>
-						<p className="text-sm text-gray-400">
+						<p className="text-sm text-gray-600">
 							Tindakan yang tidak dapat diubah dan bersifat
 							merusak
 						</p>
@@ -599,10 +598,10 @@ function ProfileContent() {
 
 					<div className="flex items-center justify-between p-4 bg-red-900/10 rounded-lg border border-red-500/20">
 						<div>
-							<h3 className="font-medium text-white mb-1">
+							<h3 className="font-medium text-black mb-1">
 								Hapus Akun
 							</h3>
-							<p className="text-sm text-gray-400">
+							<p className="text-sm text-black">
 								Setelah akun kamu dihapus, tidak dapat
 								dikembalikan lagi
 							</p>
@@ -616,17 +615,17 @@ function ProfileContent() {
 							Hapus Akun
 						</button>
 					</div>
-				</Card>
+				</div>
 
 				{/* Delete Confirmation Modal */}
 				{showDeleteConfirm && (
 					<div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-						<div className="bg-gray-800 rounded-lg max-w-md w-full p-6 border border-gray-700">
+						<div className="bg-white rounded-lg max-w-md w-full p-6 border border-gray-700">
 							<div className="mb-4">
-								<h3 className="text-xl font-bold text-red-400 mb-2">
+								<h3 className="text-xl font-bold text-red-500 mb-2">
 									Hapus Akun
 								</h3>
-								<p className="text-gray-300 text-sm">
+								<p className="text-blacktext-sm">
 									Apakah Anda yakin ingin menghapus akun ini?
 									Tindakan ini tidak dapat dibatalkan dan
 									semua data Anda akan hilang secara permanen.
@@ -653,9 +652,37 @@ function ProfileContent() {
 						</div>
 					</div>
 				)}
-			</main>
 
-			<Footer />
+				{/* Image Viewer Modal */}
+				{showImageModal && profilePicture && (
+					<div
+						className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+						onClick={() => setShowImageModal(false)}
+					>
+						<div
+							className="relative max-w-3xl max-h-[90vh] w-full"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<button
+								onClick={() => setShowImageModal(false)}
+								className="bg-white absolute -top-8 right-3 text-black hover:text-yellow-500 transition-colors text-sm font-medium px-2 py-1 rounded-lg"
+							>
+								Tutup ✕
+							</button>
+							<div className="relative w-full h-full flex items-center justify-center">
+								<Image
+									src={profilePicture}
+									alt="Foto Profil"
+									width={800}
+									height={800}
+									className="max-w-full max-h-[90vh] object-contain rounded-lg"
+									unoptimized
+								/>
+							</div>
+						</div>
+					</div>
+				)}
+			</main>
 		</div>
 	);
 }

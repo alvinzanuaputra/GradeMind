@@ -13,12 +13,12 @@ DEVICE_MODE = "cuda"  # ubah ke "cuda" jika ingin pakai GPU
 # 🧠 Daftar model yang akan diuji
 # =========================================
 MODEL_LIST = {
-    "bert-base-multilingual-cased": "/home/mbsaloka/.cache/huggingface/hub/models--bert-base-multilingual-cased/snapshots/3f076fdb1ab68d5b2880cb87a0886f315b8146f8",
-    "all-mpnet-base-v2": "/home/mbsaloka/.cache/huggingface/hub/models--sentence-transformers--all-mpnet-base-v2/snapshots/e8c3b32edf5434bc2275fc9bab85f82640a19130",
-    "LaBSE": "/home/mbsaloka/.cache/huggingface/hub/models--sentence-transformers--LaBSE/snapshots/836121a0533e5664b21c7aacc5d22951f2b8b25b",
-    "E5-small-v2": "/home/mbsaloka/.cache/huggingface/hub/models--intfloat--multilingual-e5-small/snapshots/c007d7ef6fd86656326059b28395a7a03a7c5846",
-    "E5-base-v2": "/home/mbsaloka/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/835193815a3936a24a0ee7dc9e3d48c1fbb19c55",
-    "MiniLM": "/home/mbsaloka/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
+    "bert-base-multilingual-cased": "bert-base-multilingual-cased",
+    "all-mpnet-base-v2": "sentence-transformers/all-mpnet-base-v2",
+    "LaBSE": "sentence-transformers/LaBSE",
+    "E5-small-v2": "intfloat/multilingual-e5-small",
+    "E5-base-v2": "intfloat/multilingual-e5-base",
+    "MiniLM": "sentence-transformers/all-MiniLM-L6-v2",
     # "IndoBERT": "indobenchmark/indobert-lite-base-p1"
 }
 
@@ -73,7 +73,7 @@ Jika komputer lambat, solusinya adalah menambah antivirus atau mengganti browser
 # =========================================
 # 🧮 Fungsi Benchmark
 # =========================================
-def benchmark_model(model_name: str, model_path: str, answer_key: str, student_answers: list, device_mode: str):
+def benchmark_model(model_name: str, model_id: str, answer_key: str, student_answers: list, device_mode: str):
     print(f"\n🔍 Menguji model: {model_name} ({device_mode})")
 
     # Pastikan mode GPU valid
@@ -82,7 +82,7 @@ def benchmark_model(model_name: str, model_path: str, answer_key: str, student_a
         device_mode = "cpu"
 
     start_load = time.time()
-    model = SentenceTransformer(model_path, device=device_mode)
+    model = SentenceTransformer(model_id, device=device_mode)
     load_time = (time.time() - start_load) * 1000
 
     # Warmup
@@ -127,9 +127,9 @@ if __name__ == "__main__":
     if DEVICE_MODE == "cpu":
         torch.cuda.is_available = lambda: False
 
-    for name, path in MODEL_LIST.items():
+    for name, model_id in MODEL_LIST.items():
         try:
-            res = benchmark_model(name, path, ANSWER_KEY, STUDENT_ANSWERS, DEVICE_MODE)
+            res = benchmark_model(name, model_id, ANSWER_KEY, STUDENT_ANSWERS, DEVICE_MODE)
             all_results.extend(res)
         except Exception as e:
             print(f"❌ Gagal memproses {name}: {e}")

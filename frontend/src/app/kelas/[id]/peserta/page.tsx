@@ -3,7 +3,6 @@
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useClassDetail, useRemoveParticipant } from "@/hooks/useClasses";
@@ -52,23 +51,22 @@ function PesertaContent() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data peserta..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	if (!classData) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+						<h2 className="text-xl font-semibold text-dark mb-2">
 							Kelas tidak ditemukan
 						</h2>
 						<Button onClick={() => router.push("/kelas")}>
@@ -76,22 +74,40 @@ function PesertaContent() {
 						</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	const participants = classData.participants || [];
 
+	// Array of gradient color classes
+	const GRADIENTS = [
+		'from-blue-500 to-blue-700',
+		'from-yellow-500 to-yellow-700',
+		'from-green-500 to-green-700',
+		'from-purple-500 to-purple-700',
+		'from-pink-500 to-pink-700',
+		'from-orange-500 to-orange-700',
+		'from-teal-500 to-teal-700',
+		'from-red-500 to-red-700',
+		'from-indigo-500 to-indigo-700',
+		'from-emerald-500 to-emerald-700',
+		'from-fuchsia-500 to-fuchsia-700',
+		'from-cyan-500 to-cyan-700',
+		'from-lime-500 to-lime-700',
+		'from-amber-500 to-amber-700',
+		'from-sky-500 to-sky-700',
+	];
+
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
 						<button
 							onClick={handleBack}
-							className="text-white hover:text-gray-300 transition-colors"
+							className="text-dark hover:text-gray-300 transition-colors"
 						>
 							<ArrowLeft
 								className="w-5 h-5 sm:w-6 sm:h-6"
@@ -101,12 +117,12 @@ function PesertaContent() {
 						<div className="flex items-center gap-2 sm:gap-3">
 							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
 								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+									className="w-5 h-5 sm:w-6 sm:h-6 text-dark"
 									weight="bold"
 								/>
 							</div>
 							<div>
-								<h1 className="text-2xl sm:text-3xl font-bold text-white">
+								<h1 className="text-2xl sm:text-3xl font-bold text-dark">
 									{classData.name}
 								</h1>
 								<p className="text-sm text-gray-400 mt-1">
@@ -117,63 +133,89 @@ function PesertaContent() {
 					</div>
 				</div>
 				<div>
-					<h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
-						Peserta ({participants.length})
+					<h2 className="text-lg sm:text-xl font-semibold text-dark mb-4">
+						Daftar Semua Peserta ({participants.length})
 					</h2>
-					<div className="space-y-2 sm:space-y-3">
-						{participants.map((participant) => (
-							<div
-								key={participant.id}
-								className="!bg-slate-800 border border-white rounded-xl px-4 sm:px-6 py-3 sm:py-4 transition-all hover:bg-gray-800/50 dark:hover:border-gray-800 flex items-center justify-between"
-							>
-								<div className="flex items-center gap-3">
-									<div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-										<User
-											className="w-5 h-5 text-white"
-											weight="bold"
-										/>
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+						{participants.map((participant, idx) => {
+							const gradient = GRADIENTS[idx % GRADIENTS.length];
+							return (
+								<div
+									key={participant.id}
+									className={`rounded-2xl shadow-md border-2 border-gray-100 bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
+								>
+									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border-2 border-white shadow">
+										{participant.profile_picture ? (
+											<>
+												{/* eslint-disable-next-line @next/next/no-img-element */}
+												<img
+													src={participant.profile_picture}
+													alt="Foto Profil"
+													className="w-full h-full object-cover"
+													width={56}
+													height={56}
+													onError={e => {
+														const target = e.target as HTMLImageElement;
+														target.onerror = null;
+														target.src = '';
+														target.style.display = 'none';
+														const parent = target.parentElement;
+														if (parent && !parent.querySelector('.fallback-profile-icon')) {
+															const icon = document.createElement('div');
+															icon.className = 'fallback-profile-icon';
+															icon.innerHTML = '<svg class="w-7 h-7 text-dark" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
+															parent.appendChild(icon.firstChild as Node);
+														}
+													}}
+												/>
+											</>
+										) : (
+											<User
+												className="w-7 h-7 text-dark"
+												weight="bold"
+											/>
+										)}
 									</div>
-									<div>
-										<p className="text-sm sm:text-base !text-white font-medium">
+									<div className="flex-1 min-w-0">
+										<p className="text-base font-semibold text-white truncate drop-shadow">
 											{participant.fullname}
 										</p>
-										<p className="text-xs text-gray-400">
+										<p className="text-xs text-white/80 truncate">
 											{participant.email}
 										</p>
 									</div>
+									{isTeacher &&
+										participant.user_id !== classData.teacher_id && (
+											<button
+												onClick={() =>
+													handleRemoveParticipant(
+														participant.user_id,
+														participant.fullname
+													)
+												}
+												className="text-red-100 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-400/20"
+												title="Hapus peserta"
+											>
+												<Trash
+													className="w-5 h-5"
+													weight="bold"
+												/>
+											</button>
+										)}
 								</div>
-								{isTeacher &&
-									participant.user_id !==
-										classData.teacher_id && (
-										<button
-											onClick={() =>
-												handleRemoveParticipant(
-													participant.user_id,
-													participant.fullname
-												)
-											}
-											className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-											title="Hapus peserta"
-										>
-											<Trash
-												className="w-5 h-5"
-												weight="bold"
-											/>
-										</button>
-									)}
-							</div>
-						))}
+							);
+						})}
 					</div>
 					{participants.length === 0 && (
 						<div className="text-center py-12 sm:py-20">
 							<div className="max-w-md mx-auto">
-								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center">
+								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-gray-100 flex items-center justify-center">
 									<Books
 										className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400"
 										weight="bold"
 									/>
 								</div>
-								<h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+								<h3 className="text-lg sm:text-xl font-semibold text-dark mb-2">
 									Belum Ada Peserta
 								</h3>
 								<p className="text-sm sm:text-base text-gray-400">
@@ -184,7 +226,6 @@ function PesertaContent() {
 					)}
 				</div>
 			</main>
-			<Footer />
 		</div>
 	);
 }

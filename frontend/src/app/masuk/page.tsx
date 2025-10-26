@@ -167,7 +167,7 @@ function LoginContent() {
 				<div>
 					<label
 						htmlFor="email"
-						className="block text-xs sm:text-sm font-medium text-white mb-2"
+						className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
 					>
 						Email
 					</label>
@@ -178,11 +178,11 @@ function LoginContent() {
 						placeholder="Tulis alamat email Anda"
 						value={formData.email}
 						onChange={handleChange}
-						className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white dark:bg-transparent border-2 border-gray-300 dark:border-gray-600 rounded-full text-sm sm:text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-yellow-400 dark:focus:border-gray-400 transition-colors"
+						className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-2 border-gray-300 rounded-full text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 hover:border-gray-400 transition-all"
 						required
 					/>
 					{errors.email && (
-						<p className="mt-2 text-xs sm:text-sm text-red-600 dark:text-red-400">
+						<p className="mt-2 text-xs sm:text-sm text-red-600">
 							{errors.email}
 						</p>
 					)}
@@ -210,16 +210,16 @@ function LoginContent() {
 
 				<div className="relative">
 					<div className="absolute inset-0 flex items-center">
-						<div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+						<div className="w-full border-t border-gray-200"></div>
 					</div>
 					<div className="relative flex justify-center text-xs sm:text-sm">
-						<span className="px-4 bg-gray-800 dark:bg-white text-gray-500">
-							Atau login dengan
+						<span className="px-4 bg-gray-50 text-gray-500">
+							Atau masuk sebagai mahasiswa dengan
 						</span>
 					</div>
 				</div>
 
-				{/* <div className="grid grid-cols-2 gap-3 sm:gap-4">
+				<div className="grid grid-cols-2 gap-3 sm:gap-4">
 					<button
 						type="button"
 						onClick={handleGoogleLogin}
@@ -236,15 +236,15 @@ function LoginContent() {
 						<FaGithub className="w-4 h-4 sm:w-5 sm:h-5" />
 						<span className="hidden sm:inline">GitHub</span>
 					</button>
-				</div> */}
+				</div>
 
 				<div className="text-center">
-					<span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+					<span className="text-xs sm:text-sm text-gray-600">
 						Belum punya akun?{" "}
 					</span>
 					<Link
 						href="/daftar"
-						className="text-xs sm:text-sm text-yellow-400 hover:text-yellow-300 font-medium transition-colors"
+						className="text-xs sm:text-sm text-yellow-600 hover:text-yellow-700 font-medium transition-colors"
 					>
 						Daftar di sini
 					</Link>

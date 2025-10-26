@@ -4,13 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useGetInviteCode } from "@/hooks/useClasses";
 import toast from "react-hot-toast";
-import { ArrowLeft, Books, Copy, Check } from "phosphor-react";
+import { ArrowLeft, Copy, Check, UserSwitch } from "phosphor-react";
 
 export default function InvitePesertaPage() {
 	return (
@@ -87,14 +86,13 @@ function InvitePesertaContent() {
 		}
 	};
 
-	// Show access denied message for non-teachers
 	if (user && user.user_role !== "dosen") {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+						<h2 className="text-xl font-semibold text-black mb-2">
 							Akses Ditolak
 						</h2>
 						<p className="text-gray-400 mb-4">
@@ -107,25 +105,23 @@ function InvitePesertaContent() {
 						</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	if (getInviteCode.isPending || !inviteData) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat kode undangan..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -134,32 +130,29 @@ function InvitePesertaContent() {
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
 						<button
 							onClick={handleBack}
-							className="text-white hover:text-gray-300 transition-colors"
+							className="text-black hover:text-gray-300 transition-colors"
 						>
 							<ArrowLeft
-								className="w-5 h-5 sm:w-6 sm:h-6"
+								className="w-5 h-5 sm:w-6 sm:h-6 text-black"
 								weight="bold"
 							/>
 						</button>
 						<div className="flex items-center gap-2 sm:gap-3">
 							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
-								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+								<UserSwitch
+									className="w-5 h-5 sm:w-6 sm:h-6 text-black"
 									weight="bold"
 								/>
 							</div>
-							<h1 className="text-2xl sm:text-3xl font-bold text-white">
+							<h1 className="text-2xl sm:text-3xl font-bold text-black">
 								{inviteData.class_name}
 							</h1>
 						</div>
 					</div>
 				</div>
-
-				{/* Invite Section */}
 				<div className="max-w-3xl">
-					{/* Tautan Section */}
 					<div className="mb-6 sm:mb-8">
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-black text-base sm:text-lg font-semibold mb-3">
 							Tautan
 						</label>
 						<div className="relative">
@@ -168,11 +161,11 @@ function InvitePesertaContent() {
 								type="text"
 								value={inviteData.invite_link}
 								readOnly
-								className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 bg-[#1e1f22] border border-gray-700 rounded-xl text-sm sm:text-base text-white focus:outline-none focus:border-gray-500 transition-colors"
+								className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 bg-white border border-gray-700 rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-gray-500 transition-colors"
 							/>
 							<button
 								onClick={handleCopyLink}
-								className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+								className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
 								title="Salin tautan"
 							>
 								{copiedLink ? (
@@ -192,17 +185,17 @@ function InvitePesertaContent() {
 
 					{/* Kode Kelas Section */}
 					<div className="mb-6 sm:mb-8">
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-black text-base sm:text-lg font-semibold mb-3">
 							Kode Kelas
 						</label>
-						<div className="bg-[#1e1f22] border border-gray-700 rounded-xl p-4 sm:p-6">
+						<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6">
 							<div className="flex items-center justify-between">
 								<span className="text-yellow-400 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-wider">
 									{inviteData.class_code}
 								</span>
 								<button
 									onClick={handleCopyCode}
-									className="text-gray-400 hover:text-white transition-colors ml-4"
+									className="text-gray-400 hover:text-black transition-colors ml-4"
 									title="Salin kode"
 								>
 									{copiedCode ? (
@@ -228,8 +221,6 @@ function InvitePesertaContent() {
 					</p>
 				</div>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }

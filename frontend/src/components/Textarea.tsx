@@ -27,7 +27,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -37,17 +37,17 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           value={value}
           maxLength={maxLength}
           className={`
-            w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors resize-y
-            text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+            w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 transition-all resize-y
+            text-gray-900 placeholder-gray-400 bg-white
             ${
               error
-                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-yellow-400 focus:border-blue-500 dark:focus:border-yellow-400"
+                ? "border-red-400 focus:ring-red-200 focus:border-red-500"
+                : "border-gray-300 focus:ring-yellow-200 focus:border-yellow-400 hover:border-gray-400"
             }
             ${
               props.disabled
-                ? "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-                : "bg-white dark:bg-transparent"
+                ? "bg-gray-100 cursor-not-allowed opacity-60"
+                : ""
             }
             ${className}
           `}
@@ -65,7 +65,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           <div>
             {error && (
               <p
-                className="text-sm text-red-600 dark:text-red-400"
+                className="text-sm text-red-600"
                 id={`${props.id}-error`}
               >
                 {error}
@@ -73,7 +73,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             )}
             {helperText && !error && (
               <p
-                className="text-sm text-gray-500 dark:text-gray-400"
+                className="text-sm text-gray-500"
                 id={`${props.id}-helper`}
               >
                 {helperText}
@@ -81,7 +81,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             )}
           </div>
           {showCharCount && maxLength && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500">
               {charCount}/{maxLength}
             </p>
           )}

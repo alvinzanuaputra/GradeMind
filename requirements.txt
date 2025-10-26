@@ -1,0 +1,31 @@
+fastapi[all]
+sqlmodel
+asyncpg
+fastapi-users[sqlalchemy]==13.0.0
+fastapi-users-db-sqlalchemy==6.0.1
+pydantic
+python-multipart
+python-dotenv
+httpx
+jose
+passlib[bcrypt]
+
+# ocr
+opencv-python
+cvzone
+numpy
+Pillow
+matplotlib
+PyMuPDF
+transformers
+torch
+
+# graders ai
+uvicorn
+requests
+pydantic
+bert-score==0.3.13
+sentence-transformers
+
+sqlalchemy
+psycopg2-binary

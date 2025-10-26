@@ -3,7 +3,7 @@ export const inputClasses =
 export const labelClasses =
     "block text-sm font-medium text-gray-900 dark:text-white mb-2";
 export const errorClasses = "mt-2 text-sm text-red-600 dark:text-red-400";
-export const containerClasses = "min-h-screen flex flex-col bg-[#2b2d31] dark:bg-[#2b2d31] bg-gray-50";
+export const containerClasses = "min-h-screen flex flex-col bg-white";
 export const cardGradients = [
     "bg-gradient-to-br from-yellow-600 to-yellow-700",
     "bg-gradient-to-br from-blue-800 to-blue-900",

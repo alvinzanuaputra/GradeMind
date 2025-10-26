@@ -74,7 +74,7 @@ class UserCreate(schemas.BaseUserCreate):
     username: str
     email: str
     password: str
-    user_role: UserRole = UserRole.MAHASISWA
+    user_role: UserRole
     notelp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None

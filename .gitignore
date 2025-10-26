@@ -61,12 +61,6 @@ jspm_packages/
 .DS_Store
 Thumbs.db
 
-# Prisma
-prisma/migrations/dev.db*
-
 .venv
+venv
 
-
-# Special
-
-ALVIN_README.md

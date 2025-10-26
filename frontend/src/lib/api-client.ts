@@ -15,18 +15,13 @@ class ApiClient {
 
   private getAuthToken(): string | null {
     if (typeof window === "undefined") return null;
-
-    // Try to get from cookie first
     const cookieToken = this.getCookieValue("token");
     if (cookieToken) return cookieToken;
-
-    // Fall back to localStorage
     return localStorage.getItem("token");
   }
 
   private getCookieValue(name: string): string | null {
     if (typeof window === "undefined") return null;
-
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
@@ -44,13 +39,11 @@ class ApiClient {
         const errorData: ApiError = await response.json();
         errorMessage = errorData.detail || errorMessage;
       } catch {
-        // If JSON parsing fails, use the default error message
+        console.error("Failed to parse error response as JSON");
       }
 
       throw new Error(errorMessage);
     }
-
-    // Handle 204 No Content
     if (response.status === 204) {
       return {} as T;
     }
@@ -170,15 +163,12 @@ class ApiClient {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-
-    // Note: Do NOT set Content-Type for FormData, let the browser set it with boundary
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "POST",
       headers,
       body: formData,
       ...config,
     });
-
     return this.handleResponse<T>(response);
   }
 }

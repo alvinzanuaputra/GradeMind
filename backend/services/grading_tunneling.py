@@ -2,7 +2,7 @@ from typing import Dict
 import requests
 import os
 
-AI_TUNNEL_URL = os.getenv("AI_TUNNEL_URL", "https://3775e9493c9d.ngrok-free.app/grade")
+AI_TUNNEL_URL = os.getenv("AI_TUNNEL_URL", "http://localhost:5555/grade")
 DEFAULT_MODEL = os.getenv("AI_MODEL", "qwen2.5:3b-instruct")
 TIMEOUT = int(os.getenv("AI_TIMEOUT", "120"))
 

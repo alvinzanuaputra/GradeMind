@@ -121,6 +121,7 @@ export interface ParticipantInfo {
     username: string;
     fullname: string;
     email: string;
+    profile_picture?: string;
     joined_at: string;
 }
 

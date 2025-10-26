@@ -190,21 +190,23 @@ async def get_class_detail(
     participants = [
         {
             "id": p.user.id,
+            "user_id": p.user_id,
             "username": p.user.username,
-            "full_name": p.user.fullname,
+            "fullname": p.user.fullname,
             "email": p.user.email,
+            "profile_picture": p.user.profile_picture,
             "joined_at": p.joined_at
         }
         for p in kelas.participants
     ]
     
     return ClassDetailResponse(
-        id=kelas.id,
-        name=kelas.name,
-        description=kelas.description,
-        class_code=kelas.class_code,
-        teacher_id=kelas.teacher_id,
-        teacher_name=kelas.teacher.fullname or kelas.teacher.username,
+        id=int(kelas.id),
+        name=str(kelas.name),
+        description=str(kelas.description) if kelas.description is not None else None,
+        class_code=str(kelas.class_code),
+        teacher_id=int(kelas.teacher_id),
+        teacher_name=str(kelas.teacher.fullname) if kelas.teacher.fullname else str(kelas.teacher.username),
         participant_count=len(kelas.participants),
         created_at=kelas.created_at,
         participants=participants,
@@ -289,7 +291,7 @@ async def join_class(
     kelas = result.scalar_one_or_none()
     
     if not kelas:
-        raise HTTPException(status_code=404, detail="Kelas tidak ditemukan dengan kode ini")
+        raise HTTPException(status_code=404, detail="Kelas tidak ditemukan dengan menggunakan kode ini")
     
     if kelas.teacher_id == current_user.id:
         raise HTTPException(status_code=400, detail="Anda adalah guru dari kelas ini")

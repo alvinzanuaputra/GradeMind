@@ -124,7 +124,7 @@ async def register_user(
         email=user_data.email,
         fullname=user_data.fullname,
         username=user_data.username,
-        user_role=UserRole.MAHASISWA,
+        user_role=user_data.user_role,
         notelp=user_data.notelp,
         institution=user_data.institution,
         biografi=user_data.biografi,

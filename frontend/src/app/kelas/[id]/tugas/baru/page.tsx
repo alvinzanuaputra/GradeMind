@@ -230,6 +230,7 @@ function NewAssignmentContent() {
 				toast.success("Tugas berhasil dibuat!");
 			}
 			router.push(`/kelas/${classId}`);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			console.error("Error saving assignment:", error);
 
@@ -251,11 +252,11 @@ function NewAssignmentContent() {
 
 	if (user && user.user_role !== "dosen") {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+						<h2 className="text-xl font-semibold text-black mb-2">
 							Akses Ditolak
 						</h2>
 						<p className="text-gray-400 mb-4">
@@ -275,7 +276,7 @@ function NewAssignmentContent() {
 
 	if (isEditMode && isLoadingAssignment) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data tugas..." />
@@ -286,7 +287,7 @@ function NewAssignmentContent() {
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 
 			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -295,7 +296,7 @@ function NewAssignmentContent() {
 					<div className="flex items-center gap-3 sm:gap-4 mb-6">
 						<button
 							onClick={handleBack}
-							className="text-white hover:text-gray-300 transition-colors"
+							className="text-black hover:text-gray-300 transition-colors"
 						>
 							<ArrowLeft
 								className="w-5 h-5 sm:w-6 sm:h-6"
@@ -305,22 +306,22 @@ function NewAssignmentContent() {
 						<div className="flex items-center gap-3">
 							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
 								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+									className="w-5 h-5 sm:w-6 sm:h-6 text-dark"
 									weight="bold"
 								/>
 							</div>
-							<h1 className="text-2xl sm:text-3xl font-bold text-white">
+							<h1 className="text-2xl sm:text-3xl font-bold text-dark">
 								{isEditMode ? "Edit Tugas" : "Buat Tugas Baru"}
 							</h1>
 						</div>
 					</div>
 				</div>
 
-				{/* Form */}
+
 				<form onSubmit={handleSubmit} className="space-y-6">
 					{/* Judul Tugas */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yellow-500 text-base sm:text-lg font-semibold mb-3 underline">
 							Judul Tugas
 						</label>
 						<input
@@ -328,14 +329,14 @@ function NewAssignmentContent() {
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
 							placeholder="Masukkan judul tugas"
-							className="w-full px-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors"
+							className="w-full px-4 py-3 bg-gray-50 border border-black rounded-xl text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors"
 							required
 						/>
 					</div>
 
 					{/* Deskripsi */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yell text-base sm:text-lg font-semibold mb-3">
 							Deskripsi (Opsional)
 						</label>
 						<textarea
@@ -343,20 +344,20 @@ function NewAssignmentContent() {
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="Masukkan deskripsi tugas"
 							rows={4}
-							className="w-full px-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors resize-none"
+							className="w-full px-4 py-3 bg-gray-50 border border-black rounded-xl text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors"
 						/>
 					</div>
 
 					{/* Soal dan Kunci Jawaban */}
 					<div>
-						<h2 className="text-white text-base sm:text-lg font-semibold mb-4">
+						<h2 className="text-yellow-500 text-base sm:text-lg font-semibold mb-4 underline">
 							Soal dan Kunci Jawaban
 						</h2>
-						<div className="bg-[#1e1f22] border border-gray-700 rounded-xl p-4 sm:p-6">
+						<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6">
 							{questions.map((question, index) => (
 								<div key={index} className="mb-6 last:mb-0">
 									<div className="flex items-center justify-between mb-3">
-										<h3 className="text-white font-semibold">
+										<h3 className="text-black font-semibold">
 											Soal {index + 1}
 										</h3>
 										{questions.length > 1 && (
@@ -365,7 +366,7 @@ function NewAssignmentContent() {
 												onClick={() =>
 													handleRemoveQuestion(index)
 												}
-												className="text-red-400 hover:text-red-300 transition-colors p-1"
+												className="bg-red-500 text-white hover:text-red-300 transition-colors p-1 rounded-md "
 												title="Hapus soal"
 											>
 												<Trash
@@ -393,7 +394,7 @@ function NewAssignmentContent() {
 												}
 												placeholder="Masukkan pertanyaan"
 												rows={3}
-												className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-colors resize-none"
+												className="w-full px-4 py-3 bg-gray-50 border border-black rounded-xl text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors resize-none"
 												required
 											/>
 										</div>
@@ -416,7 +417,7 @@ function NewAssignmentContent() {
 												}
 												placeholder="Masukkan kunci jawaban"
 												rows={4}
-												className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-colors resize-none"
+												className="w-full px-4 py-3 bg-gray-50 border border-black rounded-xl text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors resize-none"
 												required
 											/>
 										</div>
@@ -440,7 +441,7 @@ function NewAssignmentContent() {
 												}
 												min="1"
 												max="1000"
-												className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gray-500 transition-colors"
+												className="w-full px-4 py-3 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-gray-500 transition-colors"
 												required
 											/>
 										</div>
@@ -458,7 +459,7 @@ function NewAssignmentContent() {
 								<button
 									type="button"
 									onClick={handleAddQuestion}
-									className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+									className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-black rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
 								>
 									<Plus className="w-5 h-5" weight="bold" />
 									Tambah Soal
@@ -470,10 +471,8 @@ function NewAssignmentContent() {
 							kunci jawaban yang Anda berikan.
 						</p>
 					</div>
-
-					{/* Deadline */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yellow-500 text-base sm:text-lg font-semibold mb-3 underline">
 							Deadline (Opsional)
 						</label>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -488,7 +487,7 @@ function NewAssignmentContent() {
 									onChange={(e) =>
 										setDeadline(e.target.value)
 									}
-									className="w-full pl-10 pr-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white focus:outline-none focus:border-gray-500 transition-colors"
+									className="w-full pl-10 pr-4 py-3 bg-white border border-gray-700 rounded-xl text-black focus:outline-none focus:border-gray-500 transition-colors"
 								/>
 							</div>
 							<div className="relative">
@@ -502,7 +501,7 @@ function NewAssignmentContent() {
 									onChange={(e) =>
 										setDeadlineTime(e.target.value)
 									}
-									className="w-full pl-10 pr-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white focus:outline-none focus:border-gray-500 transition-colors"
+									className="w-full pl-10 pr-4 py-3 bg-white border border-gray-700 rounded-xl text-black focus:outline-none focus:border-gray-500 transition-colors"
 								/>
 							</div>
 						</div>
@@ -510,10 +509,10 @@ function NewAssignmentContent() {
 
 					{/* Max Score - Auto calculated */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yellow-500 text-base sm:text-lg font-semibold mb-3 underline">
 							Skor Maksimal
 						</label>
-						<div className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-xl text-white">
+						<div className="w-full px-4 py-3 bg-white border border-gray-600 rounded-xl text-dark">
 							<div className="flex items-center justify-between">
 								<span className="text-gray-400">
 									Total Poin dari Semua Soal:
@@ -531,7 +530,7 @@ function NewAssignmentContent() {
 
 					{/* Minimal Score for Passing */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yellow-500 text-base sm:text-lg font-semibold mb-3 underline">
 							Nilai Minimal Kelulusan
 						</label>
 						<input
@@ -541,7 +540,7 @@ function NewAssignmentContent() {
 							min="0"
 							max={maxScore || "100"}
 							placeholder="75"
-							className="w-full px-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors"
+							className="w-full px-4 py-3 bg-gray-50 border border-black rounded-xl text-black placeholder-gray-50 focus:outline-none focus:border-yellow-500 transition-colors"
 							required
 						/>
 						<p className="text-sm text-gray-400 mt-2">
@@ -581,8 +580,6 @@ function NewAssignmentContent() {
 					</div>
 				</form>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }
