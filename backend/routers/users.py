@@ -143,30 +143,3 @@ async def update_current_user_profile(
         is_verified=db_user.is_verified,
         is_oauth_user=not bool(db_user.hashed_password),
     )
-
-
-@router.delete("/me")
-async def delete_current_user_account(
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
-):
-    try:
-        user_id = current_user.id
-
-        await session.execute(delete(UserSession).where(UserSession.user_id == user_id))
-
-        await session.execute(delete(UserOAuth).where(UserOAuth.user_id == user_id))
-
-        result = await session.execute(select(User).where(User.id == user_id))
-        db_user = result.scalar_one_or_none()
-
-        if db_user:
-            await session.delete(db_user)
-
-        await session.commit()
-        return {"message": "Akun berhasil dihapus"}
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=500, detail=f"Gagal menghapus akun: {str(e)}"
-        )

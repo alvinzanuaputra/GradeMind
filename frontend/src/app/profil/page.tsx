@@ -21,7 +21,7 @@ export default function ProfilePage() {
 }
 function ProfileContent() {
 	const router = useRouter();
-	const { user, updateUser, logout } = useAuth();
+	const { user, updateUser } = useAuth();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const [profilePicture, setProfilePicture] = useState("");
@@ -44,7 +44,6 @@ function ProfileContent() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [successMessage, setSuccessMessage] = useState("");
 	const [showPasswordSection, setShowPasswordSection] = useState(false);
-	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 	const [showImageModal, setShowImageModal] = useState(false);
 
 	useEffect(() => {
@@ -252,34 +251,6 @@ function ProfileContent() {
 		}
 	};
 
-	const handleDeleteAccount = async () => {
-		setIsLoading(true);
-
-		try {
-			await userService.deleteAccount();
-
-			toast.success("Akun berhasil dihapus");
-			logout();
-
-			setTimeout(() => {
-				router.push("/");
-			}, 1500);
-		} catch (error) {
-			let errorMessage = "Gagal menghapus akun. Silakan coba lagi.";
-
-			if (error instanceof Error) {
-				errorMessage = error.message;
-			} else if (typeof error === "string") {
-				errorMessage = error;
-			}
-
-			toast.error(errorMessage);
-		} finally {
-			setIsLoading(false);
-			setShowDeleteConfirm(false);
-		}
-	};
-
 	const handleCancel = () => {
 		router.push("/dashboard");
 	};
@@ -330,13 +301,10 @@ function ProfileContent() {
 										unoptimized
 										onError={(e) => {
 											// Fallback to default icon if image fails to load
-											const target =
-												e.target as HTMLImageElement;
+											const target = e.target as HTMLImageElement;
 											target.style.display = "none";
 											if (target.nextElementSibling) {
-												(
-													target.nextElementSibling as HTMLElement
-												).style.display = "flex";
+												(target.nextElementSibling as HTMLElement).style.display = "flex";
 											}
 										}}
 									/>
@@ -593,76 +561,9 @@ function ProfileContent() {
 						)}
 					</div>
 				)}
-				<div className="mt-6 border-t border-gray-300 pt-4">
-					<div className="mb-4">
-						<h2 className="text-xl font-semibold text-red-400 mb-2">
-							Hapus Akun
-						</h2>
-						<p className="text-sm text-gray-600">
-							Tindakan yang tidak dapat diubah dan bersifat
-							merusak
-						</p>
-					</div>
-
-					<div className="flex items-center justify-between p-4 bg-red-900/10 rounded-lg border border-red-500/20">
-						<div>
-							<h3 className="font-medium text-black mb-1">
-								Hapus Akun
-							</h3>
-							<p className="text-sm text-black">
-								Setelah akun kamu dihapus, tidak dapat
-								dikembalikan lagi
-							</p>
-						</div>
-						<button
-							type="button"
-							onClick={() => setShowDeleteConfirm(true)}
-							className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm"
-							disabled={isLoading}
-						>
-							Hapus Akun
-						</button>
-					</div>
-				</div>
-
-				{/* Delete Confirmation Modal */}
-				{showDeleteConfirm && (
-					<div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-						<div className="bg-white rounded-lg max-w-md w-full p-6 border border-gray-700">
-							<div className="mb-4">
-								<h3 className="text-xl font-bold text-red-500 mb-2">
-									Hapus Akun
-								</h3>
-								<p className="text-blacktext-sm">
-									Apakah Anda yakin ingin menghapus akun ini?
-									Tindakan ini tidak dapat dibatalkan dan
-									semua data Anda akan hilang secara permanen.
-								</p>
-							</div>
-							<div className="flex gap-3">
-								<button
-									onClick={handleDeleteAccount}
-									disabled={isLoading}
-									className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-								>
-									{isLoading
-										? "Menghapus..."
-										: "Ya, Hapus Akun"}
-								</button>
-								<button
-									onClick={() => setShowDeleteConfirm(false)}
-									disabled={isLoading}
-									className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-								>
-									Batal
-								</button>
-							</div>
-						</div>
-					</div>
-				)}
 
 				{/* Image Viewer Modal */}
-				{showImageModal && profilePicture && (
+				{showImageModal && (
 					<div
 						className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
 						onClick={() => setShowImageModal(false)}
@@ -678,14 +579,38 @@ function ProfileContent() {
 								Tutup ✕
 							</button>
 							<div className="relative w-full h-full flex items-center justify-center">
-								<Image
-									src={profilePicture}
-									alt="Foto Profil"
-									width={800}
-									height={800}
-									className="max-w-full max-h-[90vh] object-contain rounded-lg"
-									unoptimized
-								/>
+								{profilePicture ? (
+									<>
+										<Image
+											src={profilePicture}
+											alt="Foto Profil"
+											width={800}
+											height={800}
+											className="max-w-full max-h-[90vh] object-contain rounded-lg"
+											unoptimized
+											onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+												// Fallback to default icon if image fails to load in modal
+												const target = e.target as HTMLImageElement;
+												target.style.display = "none";
+												if (target.nextElementSibling) {
+													(target.nextElementSibling as HTMLElement).style.display = "flex";
+												}
+											}}
+										/>
+										<div
+											className="absolute inset-0 w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white text-6xl font-bold"
+											style={{ display: "none" }}
+										>
+											<UserCircle className="w-32 h-32" weight="bold" />
+											<span className="absolute bottom-20 left-0 right-0 text-center text-white text-lg font-semibold">Belum ada foto profil</span>
+										</div>
+									</>
+								) : (
+									<div className="w-full h-full flex flex-col items-center justify-center">
+										<UserCircle className="w-32 h-32 text-yellow-500 mb-4" weight="bold" />
+										<span className="text-white text-lg font-semibold">Belum ada foto profil</span>
+									</div>
+								)}
 							</div>
 						</div>
 					</div>

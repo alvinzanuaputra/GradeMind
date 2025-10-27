@@ -31,11 +31,6 @@ export const userService = {
     return apiClient.patch<User>("/api/users/me", data);
   },
 
-  // Delete current user
-  deleteAccount: async (): Promise<{ message: string }> => {
-    return apiClient.delete<{ message: string }>("/api/users/me");
-  },
-
   // Delete user by ID (superuser only)
   deleteUser: async (userId: number): Promise<{ message: string }> => {
     return apiClient.delete<{ message: string }>(`/api/users/${userId}`);

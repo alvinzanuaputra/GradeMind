@@ -366,7 +366,7 @@ Coding membutuhkan pengetahuan teknis, keterampilan logika, serta kemampuan untu
 pemrograman. Semua kode yang dibuat oleh programmer bisa diubah menjadi program komputer yang berfungsi jika direkam dan 
 disimpan dalam format yang dapat diterima oleh sistem operasi atau perangkat lainnya.
 
->>> tanya
+>>> 
 ```
 
 ### running ollama test python

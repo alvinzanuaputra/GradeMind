@@ -56,7 +56,6 @@ async def on_startup():
     # except Exception as e:
     #     print(f"Warning: Failed to initialize embedding model: {e}")
 
-
 @app.get("/")
 async def root():
     return {"message": "oke redi"}

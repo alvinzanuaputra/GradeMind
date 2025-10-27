@@ -5,7 +5,6 @@ from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-
 from core.db import get_session
 from core.auth import get_current_user, get_current_dosen
 from models.user_model import User
@@ -639,4 +638,3 @@ async def delete_grade(
     await db.commit()
     
     return None
-

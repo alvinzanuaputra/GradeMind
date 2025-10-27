@@ -4,7 +4,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
@@ -122,7 +121,6 @@ function DetailPenilaianContent() {
 						<Button onClick={handleBack}>Kembali</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -137,7 +135,6 @@ function DetailPenilaianContent() {
 						text="Memuat detail penilaian..."
 					/>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -161,7 +158,6 @@ function DetailPenilaianContent() {
 						<Button onClick={handleBack}>Kembali</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -448,7 +444,7 @@ function DetailPenilaianContent() {
 										<h4 className="text-sm font-semibold text-black mb-2">
 											Feedback:
 										</h4>
-										<p className="text-blue-500 leading-relaxed bg-blue-500/20 border border-blue-800/30 p-3 rounded-lg">
+										<p className="text-blue-500 leading-relaxed bg-gray-100 border border-blue-800/30 p-3 rounded-lg">
 											{qa.feedback}
 										</p>
 									</div>
@@ -465,8 +461,6 @@ function DetailPenilaianContent() {
 					</Button>
 				</div>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }

@@ -40,7 +40,7 @@ Grade Mind is a web application that helps teachers automatically grade student 
 |                 | Alvin Zanua Putra                |
 | 🤖 **AI**       | Muh. Buyung Saloka               |
 |                 | Choirul Anam                     |
-|                 | Rachmat Ramadhan                |
+|                 | Rachmat Ramadhan                 |
 
 ## 🛠 Technologies Used
 

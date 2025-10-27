@@ -392,16 +392,16 @@ function AssignmentDetailContent() {
 							<div className="flex items-center gap-2">
 								<CheckCircle
 									className={`w-5 h-5 ${isGraded
-										? "text-blue-400"
-										: "text-green-400"
+										? "text-white"
+										: "text-white"
 										}`}
 									weight="bold"
 								/>
 								<div className="flex-1">
 									<p
 										className={`${isGraded
-											? "text-blue-300"
-											: "text-green-300"
+											? "text-white"
+											: "text-white"
 											} text-sm font-medium`}
 									>
 										{isGraded
@@ -409,7 +409,7 @@ function AssignmentDetailContent() {
 											: "Tugas sudah dikumpulkan dan sedang dinilai secara otomatis..."}
 									</p>
 									{isGraded && (
-										<p className="text-blue-400 text-sm font-semibold mt-1">
+										<p className="text-white text-sm font-semibold mt-1">
 											Nilai Anda:{" "}
 											{mySubmission?.total_score?.toFixed(
 												1
@@ -597,7 +597,7 @@ function AssignmentDetailContent() {
 												{/* Show score if graded */}
 												{isGraded &&
 													mySubmission?.answers && (
-														<span className="text-sm font-medium text-blue-400">
+														<span className="text-sm font-medium text-white">
 															Nilai:{" "}
 															{mySubmission.answers
 																.find(
@@ -621,10 +621,10 @@ function AssignmentDetailContent() {
 														question.id
 												)?.feedback && (
 													<div className="mt-3 bg-blue-800 border border-blue-700 rounded-lg p-4">
-														<h4 className="text-sm font-semibold text-blue-300 mb-2">
+														<h4 className="text-sm font-semibold text-white mb-2">
 															Feedback dari AI:
 														</h4>
-														<p className="text-gray-400 text-sm whitespace-pre-wrap">
+														<p className="text-white text-sm whitespace-pre-wrap">
 															{
 																mySubmission.answers.find(
 																	(a) =>

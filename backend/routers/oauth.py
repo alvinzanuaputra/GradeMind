@@ -117,6 +117,14 @@ async def oauth_google_callback(code: str, request: Request):
             
             from models.user_model import UserRole
             
+            # Download and save profile picture untuk user baru
+            local_picture_path = None
+            if picture_url:
+                # Temporary save tanpa user_id, will update after flush
+                local_picture_path = picture_url
+            
+            from models.user_model import UserRole
+            
             user = User(
                 email=email,
                 fullname=name,
@@ -234,7 +242,7 @@ async def oauth_github_callback(code: str, request: Request):
             oauth_id = str(user_info.get("id"))
             email = primary_email or f"github_{oauth_id}@gmail.com"
             name = user_info.get("name") or user_info.get("login", "")
-            avatar = user_info.get("avatar_url")
+            avatar_url = user_info.get("avatar_url")
             
             result = await session.execute(
                 select(UserOAuth).where(
@@ -249,7 +257,7 @@ async def oauth_github_callback(code: str, request: Request):
                 
                 user = await session.get(User, oauth_account.user_id)
                 if user:
-                    user.profile_picture = avatar
+                    user.profile_picture = avatar_url
                     user.fullname = name
                 
                 await session.commit()
@@ -266,7 +274,7 @@ async def oauth_github_callback(code: str, request: Request):
                         email=email,
                         fullname=name,
                         username=username,
-                        profile_picture=avatar,
+                        profile_picture=avatar_url,
                         user_role=UserRole.MAHASISWA, 
                         hashed_password="",
                         is_active=True,

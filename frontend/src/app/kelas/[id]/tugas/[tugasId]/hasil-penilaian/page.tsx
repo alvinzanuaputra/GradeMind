@@ -40,7 +40,6 @@ function HasilPenilaianContent() {
 		useAssignmentGrades(assignmentId);
 	const autoGradeAll = useAutoGradeAllSubmissions();
 
-	// Redirect if user is not a teacher
 	useEffect(() => {
 		if (user && user.user_role !== "dosen") {
 			toast.error("Hanya dosen yang dapat melihat hasil penilaian");
@@ -220,9 +219,6 @@ function HasilPenilaianContent() {
 							</div>
 						</div>
 					</div>
-
-
-					{/* Nilai Section */}
 					<div className="mb-6 sm:mb-8">
 						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
 							Daftar Nilai
@@ -236,7 +232,7 @@ function HasilPenilaianContent() {
 										return (
 											<div
 												key={grade.id}
-												className="bg-white rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
+												className="bg-white rounded-lg border shadow-md p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
 											>
 												<div className="flex-1 min-w-0 w-full sm:w-auto">
 													<p className="text-sm sm:text-base text-black font-medium truncate">
