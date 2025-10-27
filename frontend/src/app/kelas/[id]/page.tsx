@@ -445,7 +445,7 @@ function ClassDetailContent() {
 								})}
 							</>
 						) : (
-							<div className="text-center py-8 text-gray-400">
+							<div className="text-center py-8 text-black">
 								Belum ada tugas untuk kelas ini
 							</div>
 						)}

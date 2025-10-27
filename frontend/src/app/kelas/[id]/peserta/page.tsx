@@ -125,7 +125,7 @@ function PesertaContent() {
 								<h1 className="text-2xl sm:text-3xl font-bold text-dark">
 									{classData.name}
 								</h1>
-								<p className="text-sm text-gray-400 mt-1">
+								<p className="text-sm text-gray-800 mt-1">
 									{classData.teacher_name}
 								</p>
 							</div>
@@ -142,9 +142,9 @@ function PesertaContent() {
 							return (
 								<div
 									key={participant.id}
-									className={`rounded-2xl shadow-md border-2 border-gray-100 bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
+									className={`rounded-2xl shadow-lg border border-black bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
 								>
-									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border-2 border-white shadow">
+									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border border-black shadow">
 										{participant.profile_picture ? (
 											<>
 												{/* eslint-disable-next-line @next/next/no-img-element */}

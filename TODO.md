@@ -1,4 +1,4 @@
-# TODO
+# TODO NOTUL SALOKA
 
 PERLU DIPERBAIKI
 - set KKM
@@ -20,12 +20,20 @@ AI
 - regresiin nilai biar lebih masuk akal
 - hindari prompt injection
 
+## FAIZ
+
+known bugs:
+
+1. takutnya ada page yg masih salah routing namanya (karna habis diganti namanya)
+2. edit assignment bug, z-index nya yg salah kayanya
+3. hapus peserta dari kelas (blom tau penyebabnya)
+
 
 # TODO Details
 
 PERLU DIPERBAIKI
 - set KKM
-- jawaban sementara disimpan di session/cookies (biar kalo refresh tidak hilang jawabannya waktu ketik)
+- jawaban sementara disimpan di session/cookies (biar kalo refresh tidak hilang jawabannya waktu ketik) 
 - tombol lihat analisis jangan di bawah, sudah
 - button tema hilang (optional frontend) => fix diganti tema putih only
 - salah warna KKM di student view -> pastikan nilai KKM terinput di database misal 75 ya 75, 55 yaa 55  
@@ -44,3 +52,11 @@ AI
 - nurunin aspek similarity
 - regresiin nilai biar lebih masuk akal
 - hindari prompt injection
+
+
+# bug founded fix
+
+- saat membuat kelas tidak perlu refresh lagi, auto fetch
+- menghilangkan mode dark, sekarang statis di mode light
+- berhasil menerapkan session di ketik jawaban mahasiswa agar live session
+- 

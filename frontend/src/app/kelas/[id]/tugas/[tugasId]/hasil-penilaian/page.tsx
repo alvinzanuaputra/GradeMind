@@ -14,7 +14,8 @@ import {
 	useAutoGradeAllSubmissions,
 } from "@/hooks/useGrading";
 import toast from "react-hot-toast";
-import { ArrowLeft, Books, DotsThreeVertical, Play } from "phosphor-react";
+import { ArrowLeft, Books, Play } from "phosphor-react";
+// import { DotsThreeVertical } from "phosphor-react";
 
 export default function HasilPenilaianPage() {
 	return (
@@ -209,10 +210,10 @@ function HasilPenilaianContent() {
 									(
 									{totalStudents > 0
 										? Math.round(
-												(totalSubmissions /
-													totalStudents) *
-													100
-										  )
+											(totalSubmissions /
+												totalStudents) *
+											100
+										)
 										: 0}
 									%)
 								</p>
@@ -222,69 +223,65 @@ function HasilPenilaianContent() {
 
 
 					{/* Nilai Section */}
-				<div className="mb-6 sm:mb-8">
-					<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
-						Daftar Nilai
-					</h2>
-					<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6">
-						{grades.length > 0 ? (
-							<div className="space-y-2 sm:space-y-3">
-								{grades.map((grade) => {
-									const isPassed =
-										grade.total_score >= minimalScore;
-									return (
-										<div
-											key={grade.id}
-											className="bg-white rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
-										>
-											{/* Student Name */}
-											<div className="flex-1 min-w-0 w-full sm:w-auto">
-												<p className="text-sm sm:text-base text-black font-medium truncate">
-													{grade.student_name}
-												</p>
-												<p className="text-xs text-black">
-													{new Date(
-														grade.graded_at
-													).toLocaleDateString(
-														"id-ID",
-														{
-															day: "numeric",
-															month: "long",
-															year: "numeric",
-														}
-													)}
-												</p>
-											</div>
-
-											{/* Score Badge and Actions */}
-											<div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
-												{/* Score Badge */}
-												<div
-													className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-black text-sm sm:text-base min-w-[60px] sm:min-w-[80px] text-center ${
-														isPassed
-															? "bg-green-500"
-															: "bg-red-500"
-													}`}
-												>
-													{grade.total_score?.toFixed(
-														1
-													) || 0}
+					<div className="mb-6 sm:mb-8">
+						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
+							Daftar Nilai
+						</h2>
+						<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6">
+							{grades.length > 0 ? (
+								<div className="space-y-2 sm:space-y-3">
+									{grades.map((grade) => {
+										const isPassed =
+											grade.total_score >= minimalScore;
+										return (
+											<div
+												key={grade.id}
+												className="bg-white rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
+											>
+												<div className="flex-1 min-w-0 w-full sm:w-auto">
+													<p className="text-sm sm:text-base text-black font-medium truncate">
+														{grade.student_name}
+													</p>
+													<p className="text-xs text-black">
+														{new Date(
+															grade.graded_at
+														).toLocaleDateString(
+															"id-ID",
+															{
+																day: "numeric",
+																month: "long",
+																year: "numeric",
+															}
+														)}
+													</p>
 												</div>
 
-												{/* Detail Button */}
-												<Button
-													onClick={() =>
-														handleDetail(grade.submission_id)
-													}
-													variant="outline"
-													size="sm"
-													className="border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-black min-w-[70px] sm:min-w-[80px] text-xs sm:text-sm"
-												>
-													Detail
-												</Button>
+												{/* Score Badge and Actions */}
+												<div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+													{/* Score Badge */}
+													<div
+														className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-black text-sm sm:text-base min-w-[60px] sm:min-w-[80px] text-center ${isPassed
+																? "bg-green-500"
+																: "bg-red-500"
+															}`}
+													>
+														{grade.total_score?.toFixed(
+															1
+														) || 0}
+													</div>
+													<Button
+														onClick={() =>
+															handleDetail(grade.submission_id)
+														}
+														variant="outline"
+														size="sm"
+														className="border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-black min-w-[70px] sm:min-w-[80px] text-xs sm:text-sm"
+													>
+														Detail
+													</Button>
 
-												{/* Menu Button */}
-												{/* <button
+													{/* Menu Button */}
+													{/* <button
 													onClick={() =>
 														console.log(
 															"Menu",
@@ -298,21 +295,20 @@ function HasilPenilaianContent() {
 														weight="bold"
 													/>
 												</button> */}
+												</div>
 											</div>
-										</div>
-									);
-								})}
-							</div>
-						) : (
-							<div className="text-center py-12">
-								<p className="text-black">
-									Belum ada penilaian
-								</p>
-							</div>
-						)}
+										);
+									})}
+								</div>
+							) : (
+								<div className="text-center py-12">
+									<p className="text-black">
+										Belum ada penilaian
+									</p>
+								</div>
+							)}
+						</div>
 					</div>
-				</div>
-
 					<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6 lg:p-8">
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
 							{/* Bar Chart - Kelulusan */}
@@ -328,12 +324,11 @@ function HasilPenilaianContent() {
 											style={{
 												height:
 													gradedStudents > 0
-														? `${
-																(passedStudents /
-																	gradedStudents) *
-																100 *
-																1.8
-														  }px`
+														? `${(passedStudents /
+															gradedStudents) *
+														100 *
+														1.8
+														}px`
 														: "0px",
 												maxHeight: "180px",
 											}}
@@ -346,20 +341,17 @@ function HasilPenilaianContent() {
 											Lulus
 										</div>
 									</div>
-
-									{/* Tidak Lulus Bar */}
 									<div className="flex flex-col items-center">
 										<div
 											className="w-16 sm:w-24 bg-red-500 rounded-t-lg relative"
 											style={{
 												height:
 													gradedStudents > 0
-														? `${
-																(failedStudents /
-																	gradedStudents) *
-																100 *
-																1.8
-														  }px`
+														? `${(failedStudents /
+															gradedStudents) *
+														100 *
+														1.8
+														}px`
 														: "0px",
 												maxHeight: "180px",
 											}}
@@ -374,20 +366,16 @@ function HasilPenilaianContent() {
 									</div>
 								</div>
 							</div>
-
-							{/* Donut Chart - Persentase Kelulusan */}
 							<div>
 								<h3 className="text-sm sm:text-base text-black font-semibold text-center mb-4 sm:mb-6">
 									Persentase Kelulusan
 								</h3>
 								<div className="flex items-center justify-center h-48 sm:h-64">
 									<div className="relative w-36 h-36 sm:w-48 sm:h-48">
-										{/* SVG Donut Chart */}
 										<svg
 											className="w-full h-full -rotate-90"
 											viewBox="0 0 100 100"
 										>
-											{/* Background Circle */}
 											<circle
 												cx="50"
 												cy="50"
@@ -396,7 +384,6 @@ function HasilPenilaianContent() {
 												stroke="#f44336"
 												strokeWidth="12"
 											/>
-											{/* Progress Circle - Lulus (Green) */}
 											<circle
 												cx="50"
 												cy="50"
@@ -404,15 +391,12 @@ function HasilPenilaianContent() {
 												fill="none"
 												stroke="#22c55e"
 												strokeWidth="12"
-												strokeDasharray={`${
-													passPercentage * 2.51
-												} ${
-													251 - passPercentage * 2.51
-												}`}
+												strokeDasharray={`${passPercentage * 2.51
+													} ${251 - passPercentage * 2.51
+													}`}
 												strokeLinecap="round"
 											/>
 										</svg>
-										{/* Percentage Text */}
 										<div className="absolute inset-0 flex items-center justify-center">
 											<span className="text-3xl sm:text-4xl font-bold text-black">
 												{passPercentage}%
@@ -420,7 +404,6 @@ function HasilPenilaianContent() {
 										</div>
 									</div>
 								</div>
-								{/* Legend */}
 								<div className="flex items-center justify-center gap-6 sm:gap-8 mt-4 sm:mt-6">
 									<div className="flex items-center gap-2">
 										<div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded"></div>
@@ -437,8 +420,6 @@ function HasilPenilaianContent() {
 								</div>
 							</div>
 						</div>
-
-						{/* Statistics Summary */}
 						<div className="mt-6 pt-6 border-t border-gray-700">
 							<div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
 								<div className="text-center">

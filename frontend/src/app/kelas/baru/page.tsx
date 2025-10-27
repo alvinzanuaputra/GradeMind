@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -22,6 +23,7 @@ export default function NewClassPage() {
 function NewClassContent() {
 	const router = useRouter();
 	const { user } = useAuth();
+	const queryClient = useQueryClient();
 	const [className, setClassName] = useState("");
 	const [description, setDescription] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,6 +56,10 @@ function NewClassContent() {
 			});
 
 			toast.success("Kelas berhasil dibuat!");
+			
+			// Invalidate queries to trigger refetch
+			await queryClient.invalidateQueries({ queryKey: ["classes"] });
+			
 			router.push("/dashboard");
 		} catch (error) {
 			toast.error("Gagal membuat kelas. Silakan coba lagi.");

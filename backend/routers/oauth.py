@@ -161,7 +161,7 @@ async def oauth_google_callback(code: str, request: Request):
     session.add(new_session)
     await session.commit()
     
-    return RedirectResponse(url=f"{FRONTEND_URL}/home?token={token}")
+    return RedirectResponse(url=f"{FRONTEND_URL}/dashboard?token={token}")
 
 
 @router.get("/oauth/github")
@@ -305,8 +305,8 @@ async def oauth_github_callback(code: str, request: Request):
             )
             session.add(new_session)
             await session.commit()
-            
-            return RedirectResponse(url=f"{FRONTEND_URL}/home?token={token}")
+
+            return RedirectResponse(url=f"{FRONTEND_URL}/dashboard?token={token}")
     except HTTPException:
         raise
     except Exception as e:

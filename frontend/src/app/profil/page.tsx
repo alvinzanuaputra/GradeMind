@@ -355,7 +355,7 @@ function ProfileContent() {
 									/>
 								</div>
 							</div>
-							<div>
+							<div className="flex flex-col-reverse">
 								{/* Hide upload button for OAuth users */}
 								{!user?.is_oauth_user && (
 									<>
@@ -382,11 +382,19 @@ function ProfileContent() {
 										</p>
 									</>
 								)}
-								{user?.is_oauth_user && (
-									<p className="text-md text-black underline font-semibold">
-										Foto profil diatur melalui Oauth
-									</p>
-								)}
+
+								<div>
+									{user?.is_oauth_user && (
+										<p className="font-bold text-sm rounded-md border border-yellow-500 text-yellow-500 px-3 py-1 max-w-sm">
+											Foto profil diatur melalui Oauth
+										</p>
+									)}
+									{user?.is_oauth_user && (
+										<p className="text-xs text-black mt-2">
+											ubah dari akun!
+										</p>
+									)}
+								</div>
 							</div>
 						</div>
 					</div>

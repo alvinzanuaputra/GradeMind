@@ -25,21 +25,21 @@ import {
 
 
 const CLASS_THEMES = [
-  { image: "/images/dashboard/1.png", color: "from-blue-600 to-blue-800" },
-  { image: "/images/dashboard/2.png", color: "from-yellow-600 to-yellow-800" },
-  { image: "/images/dashboard/3.png", color: "from-red-600 to-red-800" },
-  { image: "/images/dashboard/4.png", color: "from-green-700 to-green-900" },
-  { image: "/images/dashboard/5.png", color: "from-gray-700 to-gray-900" },
-  { image: "/images/dashboard/6.png", color: "from-orange-600 to-orange-800" },
-  { image: "/images/dashboard/7.png", color: "from-purple-600 to-purple-800" },
-  { image: "/images/dashboard/8.png", color: "from-green-600 to-green-800" },
-  { image: "/images/dashboard/9.png", color: "from-brown-700 to-brown-900" },
-  { image: "/images/dashboard/10.png", color: "from-teal-600 to-teal-800" },
-  { image: "/images/dashboard/11.png", color: "from-red-700 to-red-900" },
-  { image: "/images/dashboard/12.png", color: "from-teal-700 to-teal-900" },
-  { image: "/images/dashboard/13.png", color: "from-brown-600 to-brown-800" },
-  { image: "/images/dashboard/14.png", color: "from-yellow-600 to-yellow-800" },
-  { image: "/images/dashboard/15.png", color: "from-blue-700 to-blue-900" },
+  { image: "/images/dash/1.png", color: "from-blue-600 to-blue-800" },
+  { image: "/images/dash/2.png", color: "from-yellow-600 to-yellow-800" },
+  { image: "/images/dash/3.png", color: "from-red-600 to-red-800" },
+  { image: "/images/dash/4.png", color: "from-green-700 to-green-900" },
+  { image: "/images/dash/5.png", color: "from-gray-700 to-gray-900" },
+  { image: "/images/dash/6.png", color: "from-orange-600 to-orange-800" },
+  { image: "/images/dash/7.png", color: "from-purple-600 to-purple-800" },
+  { image: "/images/dash/8.png", color: "from-green-600 to-green-800" },
+  { image: "/images/dash/9.png", color: "from-brown-700 to-brown-900" },
+  { image: "/images/dash/10.png", color: "from-teal-600 to-teal-800" },
+  { image: "/images/dash/11.png", color: "from-red-700 to-red-900" },
+  { image: "/images/dash/12.png", color: "from-teal-700 to-teal-900" },
+  { image: "/images/dash/13.png", color: "from-brown-600 to-brown-800" },
+  { image: "/images/dash/14.png", color: "from-yellow-600 to-yellow-800" },
+  { image: "/images/dash/15.png", color: "from-blue-700 to-blue-900" },
 ];
 
 function DashboardWithOAuth() {
@@ -47,6 +47,7 @@ function DashboardWithOAuth() {
   const router = useRouter();
   const { login, isAuthenticated } = useAuth();
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  
   useEffect(() => {
     const token = searchParams.get("token");
 
@@ -65,7 +66,7 @@ function DashboardWithOAuth() {
             });
 
             setTimeout(() => {
-              window.location.href = "/images/dashboard";
+              window.location.href = "/dashboard";
             }, 2000);
           }
         } catch {
@@ -100,6 +101,8 @@ export default function dashboardPage() {
 
 function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [classCode, setClassCode] = useState("");
   const [joinClassError, setJoinClassError] = useState<string | null>(null);
@@ -123,6 +126,23 @@ function DashboardContent() {
     enabled: isAuthenticated,
     retry: 1,
   });
+
+  // Debounce search query
+  useEffect(() => {
+    if (searchQuery === "") {
+      setDebouncedSearchQuery("");
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setIsSearching(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleJoinClass = async () => {
     if (!classCode.trim()) {
@@ -202,8 +222,8 @@ function DashboardContent() {
   const filteredClasses =
     classes?.filter(
       (cls) =>
-        cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cls.teacher_name.toLowerCase().includes(searchQuery.toLowerCase())
+        cls.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        cls.teacher_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     ) || [];
 
   const getClassTheme = (index: number) => {
@@ -236,13 +256,13 @@ function DashboardContent() {
           <div className="relative w-full sm:w-64">
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Cari kelas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 bg-white rounded-3xl border-2 border-gray-300 text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors"
+              className="w-full px-4 py-2 pl-10 bg-white rounded-3xl border-2 border-black text-sm sm:text-base text-gray-900 placeholder-gray-700 focus:outline-none focus:border-yellow-500 transition-colors"
             />
             <MagnifyingGlass
-              className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+              className="w-5 h-5 text-black absolute left-3 top-1/2 -translate-y-1/2"
               weight="bold"
             />
           </div>
@@ -257,10 +277,35 @@ function DashboardContent() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {user?.user_role === "dosen" && (
-            <Link href="/kelas/baru">
-              <div className="relative h-48 sm:h-52 rounded-2xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 flex items-center justify-center group">
+        {isSearching ? (
+          <div className="text-center py-12 sm:py-20">
+            <LoadingSpinner size="lg" text="Mencari kelas..." />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {user?.user_role === "dosen" && (
+              <Link href="/kelas/baru">
+                <div className="relative h-48 sm:h-52 rounded-2xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 flex items-center justify-center group">
+                  <div className="text-center">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors">
+                      <Plus
+                        className="w-7 h-7 sm:w-8 sm:h-8 text-yellow-500 group-hover:text-yellow-400"
+                        weight="bold"
+                      />
+                    </div>
+                    <p className="text-sm sm:text-base text-black font-medium">
+                      Buat Kelas Baru
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {user?.user_role === "mahasiswa" && (
+              <div
+                onClick={() => setIsJoinModalOpen(true)}
+                className="relative h-48 sm:h-52 rounded-2xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 flex items-center justify-center group"
+              >
                 <div className="text-center">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors">
                     <Plus
@@ -269,33 +314,13 @@ function DashboardContent() {
                     />
                   </div>
                   <p className="text-sm sm:text-base text-black font-medium">
-                    Buat Kelas Baru
+                    Gabung Kelas
                   </p>
                 </div>
               </div>
-            </Link>
-          )}
+            )}
 
-          {user?.user_role === "mahasiswa" && (
-            <div
-              onClick={() => setIsJoinModalOpen(true)}
-              className="relative h-48 sm:h-52 rounded-2xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 flex items-center justify-center group"
-            >
-              <div className="text-center">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors">
-                  <Plus
-                    className="w-7 h-7 sm:w-8 sm:h-8 text-yellow-500 group-hover:text-yellow-400"
-                    weight="bold"
-                  />
-                </div>
-                <p className="text-sm sm:text-base text-black font-medium">
-                  Gabung Kelas
-                </p>
-              </div>
-            </div>
-          )}
-
-          {filteredClasses.map((cls, index) => {
+            {filteredClasses.map((cls, index) => {
             const isTeacher =
               user?.user_role === "dosen" && cls.teacher_id === user.id;
             const theme = getClassTheme(index);
@@ -417,8 +442,9 @@ function DashboardContent() {
               </div>
             );
           })}
-        </div>
-        {filteredClasses.length === 0 && !isLoading && (
+          </div>
+        )}
+        {!isSearching && filteredClasses.length === 0 && !isLoading && (
           <div className="text-center py-12 sm:py-20">
             <div className="max-w-md mx-auto">
               <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-gray-200 flex items-center justify-center">
@@ -431,7 +457,7 @@ function DashboardContent() {
                 Belum Ada Kelas
               </h3>
               <p className="text-sm sm:text-base text-gray-500 mb-6 sm:mb-8">
-                {searchQuery
+                {debouncedSearchQuery
                   ? "Tidak ada kelas yang cocok dengan pencarian"
                   : user?.user_role === "dosen"
                   ? "Buat kelas baru atau bergabung dengan kelas yang ada"
