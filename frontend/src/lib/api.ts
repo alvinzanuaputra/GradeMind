@@ -58,15 +58,6 @@ export const getCurrentUser = async (token: string): Promise<User> => {
   return authService.getCurrentUser();
 };
 
-export const getGoogleAuthUrl = async (): Promise<string> => {
-  const result = await authService.getGoogleAuthUrl();
-  return result.authorization_url;
-};
-
-export const getGithubAuthUrl = async (): Promise<string> => {
-  const result = await authService.getGithubAuthUrl();
-  return result.authorization_url;
-};
 
 export const updateUserProfile = async (token: string, data: UpdateProfileData): Promise<User> => {
   return userService.updateProfile(data as UserUpdate);
