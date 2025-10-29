@@ -10,7 +10,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
 import { Camera, UserCircle } from "phosphor-react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function ProfilePage() {
 	return (
@@ -32,6 +32,7 @@ function ProfileContent() {
 		bio: "",
 		phone: "",
 		institution: "",
+		nrp: "",
 	});
 
 	const [passwordData, setPasswordData] = useState({
@@ -42,7 +43,6 @@ function ProfileContent() {
 
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [isLoading, setIsLoading] = useState(false);
-	const [successMessage, setSuccessMessage] = useState("");
 	const [showPasswordSection, setShowPasswordSection] = useState(false);
 	const [showImageModal, setShowImageModal] = useState(false);
 
@@ -55,6 +55,7 @@ function ProfileContent() {
 				bio: user.biografi || "",
 				phone: user.notelp || "",
 				institution: user.institution || "",
+				nrp: user.nrp || "",
 			});
 			setProfilePicture(user.profile_picture || "");
 		}
@@ -118,15 +119,14 @@ function ProfileContent() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setErrors({});
-		setSuccessMessage("");
 
 		if (!formData.fullName.trim()) {
-			setErrors({ fullName: "Nama lengkap wajib diisi" });
+			toast.error("Nama lengkap wajib diisi");
 			return;
 		}
 
 		if (!formData.email.trim()) {
-			setErrors({ email: "Email wajib diisi" });
+			toast.error("Email wajib diisi");
 			return;
 		}
 
@@ -141,6 +141,7 @@ function ProfileContent() {
 				biografi: formData.bio,
 				notelp: formData.phone,
 				institution: formData.institution,
+				nrp: formData.nrp,
 				profile_picture: profilePicture,
 			};
 
@@ -150,11 +151,6 @@ function ProfileContent() {
 			// Update user in context
 			updateUser(updatedUser);
 			toast.success("Profil berhasil diperbarui!");
-			setSuccessMessage("Profil berhasil diperbarui!");
-
-			setTimeout(() => {
-				setSuccessMessage("");
-			}, 3000);
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error
@@ -172,7 +168,6 @@ function ProfileContent() {
 				}, 2000);
 			} else {
 				toast.error(errorMessage);
-				setErrors({ general: errorMessage });
 			}
 		} finally {
 			setIsLoading(false);
@@ -182,25 +177,24 @@ function ProfileContent() {
 	const handlePasswordSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setErrors({});
-		setSuccessMessage("");
 
 		if (!passwordData.currentPassword) {
-			setErrors({ currentPassword: "Kata sandi saat ini wajib diisi" });
+			toast.error("Kata sandi saat ini wajib diisi");
 			return;
 		}
 
 		if (!passwordData.newPassword) {
-			setErrors({ newPassword: "Kata sandi baru wajib diisi" });
+			toast.error("Kata sandi baru wajib diisi");
 			return;
 		}
 
 		if (passwordData.newPassword.length < 8) {
-			setErrors({ newPassword: "Kata sandi minimal 8 karakter" });
+			toast.error("Kata sandi minimal 8 karakter");
 			return;
 		}
 
 		if (passwordData.newPassword !== passwordData.confirmPassword) {
-			setErrors({ confirmPassword: "Kata sandi tidak cocok" });
+			toast.error("Kata sandi tidak cocok");
 			return;
 		}
 
@@ -214,7 +208,6 @@ function ProfileContent() {
 			});
 
 			toast.success("Kata sandi berhasil diubah!");
-			setSuccessMessage("Kata sandi berhasil diubah!");
 
 			// Clear password fields
 			setPasswordData({
@@ -223,10 +216,6 @@ function ProfileContent() {
 				confirmPassword: "",
 			});
 			setShowPasswordSection(false);
-
-			setTimeout(() => {
-				setSuccessMessage("");
-			}, 3000);
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error
@@ -239,12 +228,9 @@ function ProfileContent() {
 				errorMessage.includes("salah") ||
 				errorMessage.includes("incorrect")
 			) {
-				setErrors({ currentPassword: errorMessage });
+				// Current password is incorrect
 			} else if (errorMessage.includes("OAuth")) {
-				setErrors({ general: errorMessage });
 				setShowPasswordSection(false);
-			} else {
-				setErrors({ general: errorMessage });
 			}
 		} finally {
 			setIsLoading(false);
@@ -258,6 +244,7 @@ function ProfileContent() {
 	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 			<main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<div className="mb-8">
 					<h1 className="text-3xl font-bold text-black mb-2">
@@ -267,11 +254,6 @@ function ProfileContent() {
 						Ganti informasi pribadi kamu dan pengaturan
 					</p>
 				</div>
-				{successMessage && (
-					<div className="mb-6 bg-green-900/30 border border-green-500 text-green-300 px-4 py-3 rounded-lg text-sm">
-						{successMessage}
-					</div>
-				)}
 				<div className="mb-6 border-t border-gray-300 pt-4">
 					<h2 className="text-xl font-semibold text-black mb-2">
 						Foto Profil
@@ -279,11 +261,6 @@ function ProfileContent() {
 
 				</div>
 				<form onSubmit={handleSubmit} className="space-y-6">
-					{errors.general && (
-						<div className="bg-red-900/30 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-sm">
-							{errors.general}
-						</div>
-					)}
 					<div>
 						<div className="flex items-center gap-4">
 							<div
@@ -321,53 +298,35 @@ function ProfileContent() {
 										className="w-16 h-16"
 										weight="bold"
 									/>
-								</div>
-							</div>
-							<div className="flex flex-col-reverse">
-								{/* Hide upload button for OAuth users */}
-								{!user?.is_oauth_user && (
-									<>
-										<button
-											type="button"
-											onClick={handleImageClick}
-											className="px-4 py-2 bg-transparent border border-black rounded-lg text-black hover:bg-yellow-400 transition-colors text-sm font-medium flex items-center gap-2"
-										>
-											<Camera
-												className="w-4 h-4"
-												weight="bold"
-											/>
-											Ganti gambar
-										</button>
-										<input
-											ref={fileInputRef}
-											type="file"
-											accept="image/*"
-											onChange={handleImageChange}
-											className="hidden"
-										/>
-										<p className="text-xs text-gray-400 mt-2">
-											JPG, atau PNG. Max size 5MB
-										</p>
-									</>
-								)}
-
-								<div>
-									{user?.is_oauth_user && (
-										<p className="font-bold text-sm rounded-md border border-yellow-500 text-yellow-500 px-3 py-1 max-w-sm">
-											Foto profil diatur melalui Oauth
-										</p>
-									)}
-									{user?.is_oauth_user && (
-										<p className="text-xs text-black mt-2">
-											ubah dari akun!
-										</p>
-									)}
-								</div>
 							</div>
 						</div>
+						<div className="flex flex-col-reverse">
+							<>
+								<button
+									type="button"
+									onClick={handleImageClick}
+									className="px-4 py-2 bg-transparent border-2 border-yellow-500 rounded-lg text-black hover:bg-yellow-400 transition-colors text-sm font-medium flex items-center gap-2 mt-2"
+								>
+									<Camera
+										className="w-4 h-4"
+										weight="bold"
+									/>
+									Ganti gambar
+								</button>
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									onChange={handleImageChange}
+									className="hidden"
+								/>
+								<p className="text-xs text-gray-800 mt-2">
+									JPG, atau PNG. Max size 5MB
+								</p>
+							</>
+						</div>
 					</div>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+				</div>					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<Input
 							id="fullName"
 							name="fullName"
@@ -424,6 +383,20 @@ function ProfileContent() {
 							error={errors.institution}
 						/>
 					</div>
+					{/* NRP field - only show for mahasiswa role */}
+					{user?.user_role === "mahasiswa" && (
+						<Input
+							id="nrp"
+							name="nrp"
+							type="text"
+							label="NRP (Nomor Registrasi Pokok)"
+							placeholder="Contoh: 5025201234"
+							value={formData.nrp}
+							onChange={handleChange}
+							error={errors.nrp}
+							helperText="NRP adalah nomor identitas mahasiswa ITS (opsional)"
+						/>
+					)}
 					<div>
 						<label
 							htmlFor="bio"
@@ -469,9 +442,8 @@ function ProfileContent() {
 				</form>
 
 
-				{/* Hide password section for OAuth users */}
-				{!user?.is_oauth_user && (
-					<div className="mt-6 border-t border-gray-300 pt-4">
+				{/* Password Section */}
+				<div className="mt-6 border-t border-gray-300 pt-4">
 						<div className="mb-6">
 							<h2 className="text-xl font-semibold text-black mb-2">
 								Ubah Kata Sandi
@@ -560,7 +532,7 @@ function ProfileContent() {
 							</form>
 						)}
 					</div>
-				)}
+				
 
 				{/* Image Viewer Modal */}
 				{showImageModal && (

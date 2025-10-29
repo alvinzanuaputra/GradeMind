@@ -72,6 +72,8 @@ class SubmissionDetailResponse(BaseModel):
     submission_id: int
     student_id: int
     student_name: str
+    student_username: Optional[str]
+    student_nrp: Optional[str]
     assignment_id: int
     assignment_title: str
     submission_type: str
@@ -80,6 +82,7 @@ class SubmissionDetailResponse(BaseModel):
     total_score: Optional[float]
     max_score: Optional[float]
     percentage: Optional[float]
+    minimal_score: Optional[int]
     avg_pemahaman: Optional[float]
     avg_kelengkapan: Optional[float]
     avg_kejelasan: Optional[float]
@@ -113,7 +116,7 @@ async def grade_submission(
     if request.total_score < 0 or request.total_score > submission.assignment.max_score:
         raise HTTPException(
             status_code=400, 
-            detail=f"Score must be between 0 and {submission.assignment.max_score}"
+            detail=f"Skor harus antara 0 dan {submission.assignment.max_score}"
         )
     
     result = await db.execute(
@@ -199,7 +202,7 @@ async def auto_grade_submission(
     try:
         grading_result = await grade_submission_batch_via_tunnel(submission_data)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI grading failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI Grading Gagal: {str(e)}")
     
     
     for result_item in grading_result["results"]:
@@ -373,7 +376,7 @@ async def auto_grade_all_submissions(
     await db.commit()
     
     return {
-        "message": f"Auto-graded {graded_count} submissions successfully via AI tunnel",
+        "message": f"Auto-graded {graded_count} berhasil submission(s), {failed_count} gagal.",
         "total_submissions": len(submissions),
         "newly_graded": graded_count,
         "failed": failed_count
@@ -440,6 +443,8 @@ async def get_assignment_statistics(
     )
     passed_students = result.scalar_one()
     
+    # Ensure passed_students doesn't exceed graded_submissions
+    passed_students = min(passed_students, graded_submissions)
     failed_students = graded_submissions - passed_students
     pass_percentage = round((passed_students / graded_submissions * 100), 2) if graded_submissions > 0 else 0.0
     fail_percentage = round((failed_students / graded_submissions * 100), 2) if graded_submissions > 0 else 0.0
@@ -552,6 +557,8 @@ async def get_submission_details(
         submission_id=submission.id,
         student_id=submission.student_id,
         student_name=submission.student.fullname or submission.student.username,
+        student_username=submission.student.username,
+        student_nrp=submission.student.nrp,
         assignment_id=submission.assignment_id,
         assignment_title=submission.assignment.title,
         submission_type=submission.submission_type.value,
@@ -560,6 +567,7 @@ async def get_submission_details(
         total_score=submission.nilai.total_score if submission.nilai else None,
         max_score=submission.nilai.max_score if submission.nilai else None,
         percentage=submission.nilai.percentage if submission.nilai else None,
+        minimal_score=submission.assignment.minimal_score,
         avg_pemahaman=submission.nilai.avg_pemahaman if submission.nilai else None,
         avg_kelengkapan=submission.nilai.avg_kelengkapan if submission.nilai else None,
         avg_kejelasan=submission.nilai.avg_kejelasan if submission.nilai else None,
@@ -638,3 +646,91 @@ async def delete_grade(
     await db.commit()
     
     return None
+
+# ==================== EXCEL EXPORT ====================
+class ExcelExportData(BaseModel):
+    class_name: str
+    assignment_title: str
+    kkm: int
+    students: List[dict]
+
+@router.get("/assignments/{assignment_id}/export-data", response_model=ExcelExportData)
+async def get_excel_export_data(
+    assignment_id: int,
+    current_user: User = Depends(get_current_dosen),
+    db: AsyncSession = Depends(get_session)
+):
+    """
+    Get all grading data for Excel export including:
+    - Class name, Assignment title, KKM
+    - Student NRP, Full Name, Username, Total Score
+    - Individual question answers
+    """
+    # Get assignment with class info
+    result = await db.execute(
+        select(Assignment)
+        .options(selectinload(Assignment.kelas))
+        .where(Assignment.id == assignment_id)
+    )
+    assignment = result.scalar_one_or_none()
+    
+    if not assignment:
+        raise HTTPException(status_code=404, detail="Tugas tidak ditemukan")
+    
+    if assignment.kelas.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Tidak punya permission untuk export data tugas ini")
+    
+    # Get all submissions with grades and answers (only mahasiswa)
+    result = await db.execute(
+        select(AssignmentSubmission)
+        .join(User, AssignmentSubmission.student_id == User.id)
+        .options(
+            selectinload(AssignmentSubmission.student),
+            selectinload(AssignmentSubmission.nilai),
+            selectinload(AssignmentSubmission.question_answers).selectinload(QuestionAnswer.question)
+        )
+        .where(AssignmentSubmission.assignment_id == assignment_id)
+        .where(User.user_role == "mahasiswa")
+    )
+    submissions = result.scalars().all()
+    
+    # Build student data
+    students_data = []
+    for submission in submissions:
+        student = submission.student
+        
+        # Get nilai - submission.nilai is a list relationship
+        nilai = None
+        if submission.nilai and len(submission.nilai) > 0:
+            nilai = submission.nilai[0]
+        
+        # Sort question answers by question order
+        sorted_answers = sorted(
+            submission.question_answers, 
+            key=lambda qa: qa.question.order if qa.question.order else 0
+        )
+        
+        # Build answers dict
+        answers = {}
+        for idx, qa in enumerate(sorted_answers, start=1):
+            answers[f"jawaban_soal_{idx}"] = qa.answer_text or ""
+            answers[f"skor_soal_{idx}"] = qa.final_score if qa.final_score is not None else 0
+        
+        student_data = {
+            "nrp": student.nrp or "",
+            "nama_lengkap": student.fullname or "",
+            "username": student.username,
+            "nilai_total": float(nilai.total_score) if nilai else 0.0,
+            "nilai_maksimal": float(nilai.max_score) if nilai else 0.0,
+            "persentase": float(nilai.percentage) if nilai and nilai.percentage else 0.0,
+            **answers
+        }
+        
+        students_data.append(student_data)
+    
+    return ExcelExportData(
+        class_name=assignment.kelas.name,
+        assignment_title=assignment.title,
+        kkm=assignment.minimal_score,
+        students=students_data
+    )

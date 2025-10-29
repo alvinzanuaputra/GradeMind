@@ -159,13 +159,9 @@ def segment_and_ocr(image_input, debug_dir="debug_results"):
         # Crop dari gambar biner yang sudah bersih
         roi_cleaned_binary = image_no_lines[max(0, y - padding):y + h + padding, 
                                             max(0, x - padding):x + w + padding]
-        
+    
         if roi_cleaned_binary.size == 0: continue
-
-        # Invert warna (teks menjadi hitam, background putih) untuk model TrOCR
         roi_final = cv2.bitwise_not(roi_cleaned_binary)
-        
-        # Konversi ke format yang bisa dibaca TrOCR dan jalankan OCR
         roi_pil = Image.fromarray(roi_final)
         text = ocr_single_line(roi_pil)
         final_text.append(text)
@@ -174,19 +170,9 @@ def segment_and_ocr(image_input, debug_dir="debug_results"):
 
     return "\n".join(final_text)
 
-
-
-# ========================================================================
-#  CONTOH PENGGUNAAN
-# ========================================================================
 if __name__ == '__main__':
-    # Ganti dengan path gambar Anda
     image_path = 'page_2.jpg' 
-    
-    # Jalankan proses OCR
     hasil_teks = segment_and_ocr(image_path)
-    
-    # Cetak hasil
     print("="*30)
     print("      HASIL EKSTRAKSI TEKS")
     print("="*30)

@@ -29,12 +29,11 @@ function DetailPenilaianContent() {
 	const submissionId = parseInt(
 		Array.isArray(submissionIdParam)
 			? submissionIdParam[submissionIdParam.length - 1]
-			: submissionIdParam || "0"
+			: submissionIdParam || "Tidak Dinilai"
 	);
 
 	const isTeacher = user?.user_role === "dosen";
 
-	// For teachers: fetch detailed submission data
 	const {
 		data: teacherSubmissionData,
 		isLoading: isLoadingTeacher,
@@ -45,7 +44,6 @@ function DetailPenilaianContent() {
 		enabled: isTeacher,
 	});
 
-	// For students: fetch their own submission data
 	const {
 		data: studentSubmissionData,
 		isLoading: isLoadingStudent,
@@ -63,16 +61,15 @@ function DetailPenilaianContent() {
 		router.back();
 	};
 
-	// Transform student data to match teacher data format
 	const gradeDetail = isTeacher
 		? teacherSubmissionData
 		: studentSubmissionData?.submitted && studentSubmissionData?.graded
-		? {
+			? {
 				submission_id: studentSubmissionData.submission_id!,
 				student_id: user?.id || 0,
 				student_name: user?.fullname || "Student",
 				assignment_id: assignmentId,
-				assignment_title: "Assignment", // This isn't provided by my-submission endpoint
+				assignment_title: "Assignment",
 				submission_type: studentSubmissionData.submission_type!,
 				submitted_at: studentSubmissionData.submitted_at!,
 				graded: true,
@@ -90,7 +87,7 @@ function DetailPenilaianContent() {
 					studentSubmissionData.answers?.map((ans) => ({
 						question_id: ans.question_id,
 						question_text: ans.question_text,
-						question_points: 0, // Not provided by my-submission endpoint
+						question_points: 0,
 						answer_text: ans.answer_text,
 						final_score: ans.final_score,
 						feedback: ans.feedback,
@@ -101,20 +98,20 @@ function DetailPenilaianContent() {
 						rubric_rata_rata: ans.rubric_rata_rata,
 						embedding_similarity: ans.embedding_similarity,
 					})) || [],
-		  }
-		: null;
+			}
+			: null;
 
 	// Security check for students: verify they're viewing their own submission
 	if (!isTeacher && gradeDetail && gradeDetail.student_id !== user?.id) {
 		return (
-			<div className="min-h-screen flex flex-col bg-white">
+			<div className="min-h-screen flex flex-col bg-gray-50">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<h2 className="text-xl font-semibold text-black mb-2">
+						<h2 className="text-xl font-semibold text-gray-900 mb-2">
 							Akses Ditolak
 						</h2>
-						<p className="text-black mb-4">
+						<p className="text-gray-600 mb-4">
 							Anda tidak memiliki akses untuk melihat penilaian
 							ini.
 						</p>
@@ -127,7 +124,7 @@ function DetailPenilaianContent() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex flex-col bg-white">
+			<div className="min-h-screen flex flex-col bg-gray-50">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner
@@ -141,16 +138,16 @@ function DetailPenilaianContent() {
 
 	if (error || !gradeDetail || !gradeDetail.graded) {
 		return (
-			<div className="min-h-screen flex flex-col bg-white">
+			<div className="min-h-screen flex flex-col bg-gray-50">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<h2 className="text-xl font-semibold text-black mb-2">
+						<h2 className="text-xl font-semibold text-gray-900 mb-2">
 							{!gradeDetail
 								? "Detail penilaian tidak ditemukan"
 								: "Tugas belum dinilai"}
 						</h2>
-						<p className="text-black mb-4">
+						<p className="text-gray-600 mb-4">
 							{!gradeDetail
 								? "Mungkin data belum tersedia atau telah dihapus."
 								: "Tugas ini belum dinilai oleh sistem."}
@@ -165,7 +162,7 @@ function DetailPenilaianContent() {
 	const isPassed = gradeDetail.percentage && gradeDetail.percentage >= 75;
 
 	return (
-		<div className="min-h-screen flex flex-col bg-white">
+		<div className="min-h-screen flex flex-col bg-gray-50">
 			<Navbar />
 
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -174,7 +171,7 @@ function DetailPenilaianContent() {
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
 						<button
 							onClick={handleBack}
-							className="text-black hover:text-black transition-colors"
+							className="text-gray-600 hover:text-gray-900 transition-colors"
 						>
 							<ArrowLeft
 								className="w-5 h-5 sm:w-6 sm:h-6"
@@ -182,17 +179,17 @@ function DetailPenilaianContent() {
 							/>
 						</button>
 						<div className="flex items-center gap-2 sm:gap-3 flex-1">
-							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
+							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-blue-50 flex items-center justify-center">
 								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-black"
+									className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
 									weight="bold"
 								/>
 							</div>
 							<div className="flex-1">
-								<h1 className="text-2xl sm:text-3xl font-bold text-black">
+								<h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
 									Detail Penilaian
 								</h1>
-								<p className="text-sm text-gray-700 mt-1">
+								<p className="text-sm text-gray-600 mt-1">
 									{gradeDetail.student_name}
 									{gradeDetail.assignment_title &&
 										` - ${gradeDetail.assignment_title}`}
@@ -205,11 +202,10 @@ function DetailPenilaianContent() {
 				{/* Score Summary Card */}
 				<div className="mb-6 sm:mb-8">
 					<div
-						className={`rounded-xl p-6 ${
-							isPassed
-								? "bg-gradient-to-br from-green-600 to-green-700"
-								: "bg-gradient-to-br from-red-600 to-red-700"
-						}`}
+						className={`rounded-xl p-6 ${isPassed
+							? "bg-gradient-to-br from-green-600 to-green-700"
+							: "bg-gradient-to-br from-red-600 to-red-700"
+							}`}
 					>
 						<div className="flex items-center justify-between mb-4">
 							<div className="flex items-center gap-3">
@@ -245,12 +241,12 @@ function DetailPenilaianContent() {
 								<p className="text-white text-sm sm:text-base font-medium">
 									{gradeDetail.graded_at
 										? new Date(
-												gradeDetail.graded_at
-										  ).toLocaleDateString("id-ID", {
-												day: "numeric",
-												month: "long",
-												year: "numeric",
-										  })
+											gradeDetail.graded_at
+										).toLocaleDateString("id-ID", {
+											day: "numeric",
+											month: "long",
+											year: "numeric",
+										})
 										: "N/A"}
 								</p>
 							</div>
@@ -261,89 +257,168 @@ function DetailPenilaianContent() {
 				{/* Rubric Scores */}
 				{gradeDetail.avg_pemahaman && (
 					<div className="mb-6 sm:mb-8">
-						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
+						<h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
 							Skor Rubrik
 						</h2>
-						<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6">
-							<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-								<div className="text-center">
-									<p className="text-black text-xs sm:text-sm mb-2">
+						<div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+							{/* Baris 1: 4 Rubrik Utama */}
+							<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Pemahaman
 									</p>
-									<p className="text-black text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_pemahaman.toFixed(1)}
-									</p>
+									{gradeDetail.avg_pemahaman > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_pemahaman.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-								<div className="text-center">
-									<p className="text-black text-xs sm:text-sm mb-2">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Kelengkapan
 									</p>
-									<p className="text-black text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_kelengkapan?.toFixed(
-											1
-										) || "-"}
-									</p>
+									{gradeDetail.avg_kelengkapan && gradeDetail.avg_kelengkapan > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_kelengkapan.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-								<div className="text-center">
-									<p className="text-black text-xs sm:text-sm mb-2">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Kejelasan
 									</p>
-									<p className="text-black text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_kejelasan?.toFixed(
-											1
-										) || "-"}
-									</p>
+									{gradeDetail.avg_kejelasan && gradeDetail.avg_kejelasan > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_kejelasan.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-								<div className="text-center">
-									<p className="text-black text-xs sm:text-sm mb-2">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Analisis
 									</p>
-									<p className="text-black text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_analisis?.toFixed(1) ||
-											"-"}
-									</p>
+									{gradeDetail.avg_analisis && gradeDetail.avg_analisis > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_analisis.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
 							</div>
-							{gradeDetail.avg_embedding_similarity && (
-								<div className="mt-4 pt-4 border-t border-gray-700 text-center">
-									<p className="text-black text-xs sm:text-sm mb-2">
+
+							{/* Baris 2: Similarity (hijau) dan Rata-rata (merah) */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div className="text-center bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+									<p className="text-green-700 text-xs sm:text-sm mb-2 font-medium">
 										Similarity Score
 									</p>
-									<p className="text-black text-xl sm:text-2xl font-bold">
-										{(
-											gradeDetail.avg_embedding_similarity *
-											100
-										).toFixed(1)}
-										%
-									</p>
+									{gradeDetail.avg_embedding_similarity && gradeDetail.avg_embedding_similarity > 0 ? (
+										<p className="text-green-900 text-xl sm:text-2xl font-bold">
+											{(gradeDetail.avg_embedding_similarity * 100).toFixed(1)}%
+										</p>
+									) : (
+										<div>
+											<p className="text-green-900 text-xl sm:text-2xl font-bold">
+												0.0%
+											</p>
+											<p className="text-green-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-							)}
+								<div className="text-center bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200">
+									<p className="text-red-700 text-xs sm:text-sm mb-2 font-medium">
+										Rata-rata
+									</p>
+									{(() => {
+										// Hitung rata-rata dari rubric_rata_rata semua soal
+										const questionAverages = gradeDetail.question_details
+											?.map(q => q.rubric_rata_rata || 0)
+											.filter(avg => avg > 0) || [];
+										
+										const overallAverage = questionAverages.length > 0
+											? questionAverages.reduce((sum, val) => sum + val, 0) / questionAverages.length
+											: 0;
+										
+										return overallAverage > 0 ? (
+											<p className="text-red-900 text-xl sm:text-2xl font-bold">
+												{overallAverage.toFixed(1)}
+											</p>
+										) : (
+											<div>
+												<p className="text-red-900 text-xl sm:text-2xl font-bold">
+													0.0
+												</p>
+												<p className="text-red-600 text-xs mt-1">
+													Tidak dinilai
+												</p>
+											</div>
+										);
+									})()}
+								</div>
+							</div>
 						</div>
 					</div>
 				)}
 
 				{/* Question Answers Detail */}
 				<div className="mb-6 sm:mb-8">
-					<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
+					<h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
 						Detail Jawaban per Soal
 					</h2>
 					<div className="space-y-4">
 						{gradeDetail.question_details?.map((qa, index) => (
 							<div
 								key={qa.question_id}
-								className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6"
+								className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm"
 							>
 								<div className="flex items-start justify-between mb-4">
-									<h3 className="text-lg font-semibold text-black">
+									<h3 className="text-lg font-semibold text-gray-900">
 										Soal {index + 1}
 										{qa.question_points > 0 &&
 											` (${qa.question_points} poin)`}
 									</h3>
 									<div className="text-right">
-										<span className="text-2xl font-bold text-black">
+										<span className="text-2xl font-bold text-gray-900">
 											{qa.final_score?.toFixed(1) || 0}
 										</span>
-										<span className="text-black text-sm ml-1">
+										<span className="text-gray-600 text-sm ml-1">
 											{qa.question_points > 0
 												? `/ ${qa.question_points}`
 												: "poin"}
@@ -354,10 +429,10 @@ function DetailPenilaianContent() {
 								{/* Question Text */}
 								{qa.question_text && (
 									<div className="mb-4">
-										<h4 className="text-sm font-semibold text-black mb-2">
+										<h4 className="text-sm font-semibold text-gray-900 mb-2">
 											Soal:
 										</h4>
-										<p className="text-black leading-relaxed bg-white p-3 rounded-lg border border-yellow-500">
+										<p className="text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200">
 											{qa.question_text}
 										</p>
 									</div>
@@ -365,86 +440,151 @@ function DetailPenilaianContent() {
 
 								{/* Answer Text */}
 								<div className="mb-4">
-									<h4 className="text-sm font-semibold text-black mb-2">
+									<h4 className="text-sm font-semibold text-gray-900 mb-2">
 										Jawaban:
 									</h4>
-									<p className="text-black leading-relaxed bg-white p-3 rounded-lg border border-yellow-500">
+									<p className="text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200">
 										{qa.answer_text}
 									</p>
 								</div>
 
 								{/* Rubric Scores for this question */}
-								{qa.rubric_pemahaman && (
+								{qa.rubric_pemahaman !== undefined && (
 									<div className="mb-4">
-										<h4 className="text-sm font-semibold text-black mb-3">
+										<h4 className="text-sm font-semibold text-gray-900 mb-3">
 											Skor Rubrik:
 										</h4>
-										<div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-											<div className="bg-white p-3 rounded-lg text-center">
-												<p className="text-xs text-black mb-1">
+										{/* Baris 1: 4 Rubrik Utama */}
+										<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+											<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+												<p className="text-xs text-blue-700 mb-1 font-medium">
 													Pemahaman
 												</p>
-												<p className="text-black font-bold">
-													{qa.rubric_pemahaman.toFixed(
-														1
-													)}
-												</p>
+												{qa.rubric_pemahaman > 0 ? (
+													<p className="text-blue-900 font-bold text-lg">
+														{qa.rubric_pemahaman.toFixed(1)}
+													</p>
+												) : (
+													<div>
+														<p className="text-blue-900 font-bold text-lg">
+															0.0
+														</p>
+														<p className="text-blue-600 text-xs mt-1">
+															Tidak dinilai
+														</p>
+													</div>
+												)}
 											</div>
-											<div className="bg-white p-3 rounded-lg text-center">
-												<p className="text-xs text-black mb-1">
+											<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+												<p className="text-xs text-blue-700 mb-1 font-medium">
 													Kelengkapan
 												</p>
-												<p className="text-black font-bold">
-													{qa.rubric_kelengkapan?.toFixed(
-														1
-													) || "-"}
-												</p>
+												{qa.rubric_kelengkapan && qa.rubric_kelengkapan > 0 ? (
+													<p className="text-blue-900 font-bold text-lg">
+														{qa.rubric_kelengkapan.toFixed(1)}
+													</p>
+												) : (
+													<div>
+														<p className="text-blue-900 font-bold text-lg">
+															0.0
+														</p>
+														<p className="text-blue-600 text-xs mt-1">
+															Tidak dinilai
+														</p>
+													</div>
+												)}
 											</div>
-											<div className="bg-white p-3 rounded-lg text-center">
-												<p className="text-xs text-black mb-1">
+											<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+												<p className="text-xs text-blue-700 mb-1 font-medium">
 													Kejelasan
 												</p>
-												<p className="text-black font-bold">
-													{qa.rubric_kejelasan?.toFixed(
-														1
-													) || "-"}
-												</p>
+												{qa.rubric_kejelasan && qa.rubric_kejelasan > 0 ? (
+													<p className="text-blue-900 font-bold text-lg">
+														{qa.rubric_kejelasan.toFixed(1)}
+													</p>
+												) : (
+													<div>
+														<p className="text-blue-900 font-bold text-lg">
+															0.0
+														</p>
+														<p className="text-blue-600 text-xs mt-1">
+															Tidak dinilai
+														</p>
+													</div>
+												)}
 											</div>
-											<div className="bg-white p-3 rounded-lg text-center">
-												<p className="text-xs text-black mb-1">
+											<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+												<p className="text-xs text-blue-700 mb-1 font-medium">
 													Analisis
 												</p>
-												<p className="text-black font-bold">
-													{qa.rubric_analisis?.toFixed(
-														1
-													) || "-"}
-												</p>
+												{qa.rubric_analisis && qa.rubric_analisis > 0 ? (
+													<p className="text-blue-900 font-bold text-lg">
+														{qa.rubric_analisis.toFixed(1)}
+													</p>
+												) : (
+													<div>
+														<p className="text-blue-900 font-bold text-lg">
+															0.0
+														</p>
+														<p className="text-blue-600 text-xs mt-1">
+															Tidak dinilai
+														</p>
+													</div>
+												)}
 											</div>
 										</div>
-										{qa.embedding_similarity && (
-											<div className="mt-3 bg-white p-3 rounded-lg text-center">
-												<p className="text-xs text-black mb-1">
-													Similarity
+
+										{/* Baris 2: Similarity (hijau) dan Rata-rata (merah) */}
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+											<div className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg text-center border border-green-200 shadow-sm">
+												<p className="text-xs text-green-700 mb-1 font-medium">
+													Similarity Score
 												</p>
-												<p className="text-black font-bold">
-													{(
-														qa.embedding_similarity *
-														100
-													).toFixed(1)}
-													%
-												</p>
+												{qa.embedding_similarity && qa.embedding_similarity > 0 ? (
+													<p className="text-green-900 font-bold text-lg">
+														{(qa.embedding_similarity * 100).toFixed(1)}%
+													</p>
+												) : (
+													<div>
+														<p className="text-green-900 font-bold text-lg">
+															0.0%
+														</p>
+														<p className="text-green-600 text-xs mt-1">
+															Tidak dinilai
+														</p>
+													</div>
+												)}
 											</div>
-										)}
+											<div className="bg-gradient-to-br from-red-50 to-red-100 p-3 rounded-lg text-center border border-red-200 shadow-sm">
+												<p className="text-xs text-red-700 mb-1 font-medium">
+													Rata-rata
+												</p>
+												{qa.rubric_rata_rata && qa.rubric_rata_rata > 0 ? (
+													<p className="text-red-900 font-bold text-lg">
+														{qa.rubric_rata_rata.toFixed(1)}
+													</p>
+												) : (
+													<div>
+														<p className="text-red-900 font-bold text-lg">
+															0.0
+														</p>
+														<p className="text-red-600 text-xs mt-1">
+															Tidak dinilai
+														</p>
+													</div>
+												)}
+											</div>
+										</div>
 									</div>
 								)}
 
 								{/* Feedback for this question */}
 								{qa.feedback && (
 									<div>
-										<h4 className="text-sm font-semibold text-black mb-2">
+										<h4 className="text-sm font-semibold text-gray-900 mb-2">
 											Feedback:
 										</h4>
-										<p className="text-blue-500 leading-relaxed bg-gray-100 border border-blue-800/30 p-3 rounded-lg">
+										<p className="text-gray-700 leading-relaxed bg-blue-50 border border-blue-200 p-3 rounded-lg">
 											{qa.feedback}
 										</p>
 									</div>

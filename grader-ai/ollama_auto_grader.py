@@ -314,6 +314,7 @@ def grade(req: GradeRequest):
             "kelengkapan": parsed.get("kelengkapan"),
             "kejelasan": parsed.get("kejelasan"),
             "analisis": parsed.get("analisis"),
+            # rata rata skor LLM
             "rata_rata": llm_score_avg,
         },
         "embedding_similarity": sim_value,

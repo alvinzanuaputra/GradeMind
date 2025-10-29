@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Button from "@/components/Button";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { ArrowLeft, Books } from "phosphor-react";
 import { classService } from "@/services";
 
@@ -94,7 +93,6 @@ function EditClassContent() {
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data kelas..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -111,19 +109,17 @@ function EditClassContent() {
 						<p className="text-gray-400 mb-4">
 							Hanya dosen yang dapat mengedit kelas
 						</p>
-						<Button onClick={() => router.push("/dashboard")}>
-							Kembali ke Dashboard
-						</Button>
-					</div>
+					<Button onClick={() => router.push("/dashboard")}>
+						Kembali ke Dashboard
+					</Button>
 				</div>
-				<Footer />
 			</div>
-		);
-	}
-
-	return (
+		</div>
+	);
+}	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				{/* Header */}
@@ -198,8 +194,6 @@ function EditClassContent() {
 					</div>
 				</form>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }

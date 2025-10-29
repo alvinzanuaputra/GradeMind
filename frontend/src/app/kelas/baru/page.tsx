@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { ArrowLeft, Books } from "phosphor-react";
 import { classService } from "@/services";
 
@@ -81,19 +80,17 @@ function NewClassContent() {
 						<p className="text-gray-400 mb-4">
 							Hanya dosen yang dapat membuat kelas
 						</p>
-						<Button onClick={() => router.push("/dashboard")}>
-							Kembali ke Dashboard
-						</Button>
-					</div>
+					<Button onClick={() => router.push("/dashboard")}>
+						Kembali ke Dashboard
+					</Button>
 				</div>
-				<Footer />
 			</div>
-		);
-	}
-
-	return (
+		</div>
+	);
+}	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				{/* Header */}

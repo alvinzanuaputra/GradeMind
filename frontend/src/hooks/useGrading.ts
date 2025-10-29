@@ -8,6 +8,7 @@ export const gradingKeys = {
   statistics: (assignmentId: number) => ["grading", "statistics", assignmentId] as const,
   grades: (assignmentId: number) => ["grading", "grades", assignmentId] as const,
   studentGrades: (studentId: number) => ["grading", "student", studentId] as const,
+  exportData: (assignmentId: number) => ["grading", "export", assignmentId] as const,
 };
 
 // Get assignment statistics
@@ -102,3 +103,11 @@ export function useDeleteGrade() {
   });
 }
 
+// Get excel export data
+export function useExcelExportData(assignmentId: number) {
+  return useQuery({
+    queryKey: gradingKeys.exportData(assignmentId),
+    queryFn: () => gradingService.getExcelExportData(assignmentId),
+    enabled: false, // Manual trigger only
+  });
+}

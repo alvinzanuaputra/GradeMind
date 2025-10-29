@@ -6,6 +6,7 @@ import {
   AutoGradeAllResponse,
   AssignmentStatisticsResponse,
   SubmissionDetailResponse,
+  ExcelExportData,
 } from "@/types";
 
 export const gradingService = {
@@ -68,6 +69,11 @@ export const gradingService = {
   // Delete a grade for a submission (Dosen only)
   deleteGrade: async (submissionId: number): Promise<void> => {
     return apiClient.delete<void>(`/api/grading/submissions/${submissionId}/grade`);
+  },
+
+  // Get export data for Excel (Dosen only)
+  getExcelExportData: async (assignmentId: number): Promise<ExcelExportData> => {
+    return apiClient.get<ExcelExportData>(`/api/grading/assignments/${assignmentId}/export-data`);
   },
 };
 

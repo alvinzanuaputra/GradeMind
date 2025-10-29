@@ -19,14 +19,17 @@ const NavLink: React.FC<{
 	onClick?: () => void;
 	children: React.ReactNode;
 }> = ({ href, isActive, onClick, children }) => (
-	<Link
-		href={href}
-		className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? "text-yellow-500" : "text-gray-600 hover:text-gray-900"
-			}`}
-		onClick={onClick}
-	>
-		{children}
-	</Link>
+	   <Link
+		   href={href}
+		   className={`px-3 py-2 rounded-full text-sm font-medium transition-colors hover:bg-gray-100
+			   ${isActive
+				   ? "text-yellow-600 border border-yellow-500 bg-yellow-50 hover:bg-yellow-100/100"
+				   : "text-gray-600"}
+		   `}
+		   onClick={onClick}
+	   >
+		   {children}
+	   </Link>
 );
 
 const Navbar: React.FC = () => {
@@ -72,7 +75,7 @@ const Navbar: React.FC = () => {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
 					<Link href="/" className="flex items-center space-x-2">
-						<div className="text-xl sm:text-2xl font-bold">
+						<div className="lg:text-4xl sm:text-2xl font-extrabold">
 							<span className="text-yellow-500">GRADE</span>
 							<span className="text-gray-900"> MIND</span>
 						</div>

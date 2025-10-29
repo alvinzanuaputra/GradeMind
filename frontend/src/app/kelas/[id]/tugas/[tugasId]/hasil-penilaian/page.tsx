@@ -13,8 +13,10 @@ import {
 	useAssignmentGrades,
 	useAutoGradeAllSubmissions,
 } from "@/hooks/useGrading";
-import toast from "react-hot-toast";
-import { ArrowLeft, Books, Play } from "phosphor-react";
+import toast, { Toaster } from "react-hot-toast";
+import { ArrowLeft, Books, Play, DownloadSimple } from "phosphor-react";
+import * as XLSX from "xlsx";
+import { gradingService } from "@/services";
 // import { DotsThreeVertical } from "phosphor-react";
 
 export default function HasilPenilaianPage() {
@@ -68,6 +70,158 @@ function HasilPenilaianContent() {
 			} catch (error) {
 				console.error("Error auto-grading:", error);
 			}
+		}
+	};
+
+	const handleExportExcel = async () => {
+		if (!grades || grades.length === 0) {
+			toast.error("Tidak ada data untuk diekspor");
+			return;
+		}
+
+		if (!assignmentData || !statistics) {
+			toast.error("Data tugas tidak lengkap");
+			return;
+		}
+
+		const loadingToast = toast.loading("Mempersiapkan data export...");
+
+		try {
+			console.log("Starting export with grades:", grades.length);
+			
+			// Fetch detail untuk setiap submission untuk mendapatkan jawaban
+			const submissionDetails = await Promise.all(
+				grades.map(async (grade) => {
+					try {
+						const detail = await gradingService.getSubmissionDetails(grade.submission_id);
+						return detail;
+					} catch (error) {
+						console.error(`Failed to fetch submission ${grade.submission_id}:`, error);
+						return null;
+					}
+				})
+			);
+
+			// Filter out null values
+			const validSubmissions = submissionDetails.filter(s => s !== null);
+			
+			if (validSubmissions.length === 0) {
+				toast.dismiss(loadingToast);
+				toast.error("Tidak ada data detail submission yang bisa diambil");
+				return;
+			}
+
+			console.log("Valid submissions:", validSubmissions.length);
+
+			// Find max number of questions
+			let maxQuestions = 0;
+			validSubmissions.forEach((submission) => {
+				if (submission && submission.question_details) {
+					maxQuestions = Math.max(maxQuestions, submission.question_details.length);
+				}
+			});
+
+			// Prepare header info (get class name from URL or assignmentData)
+			const headerInfo = [
+				["Nama Kelas", assignmentData.class_name || "N/A"],
+				["Nama Tugas", assignmentData.title],
+				["KKM", statistics.minimal_score],
+				[], // Empty row
+			];
+
+			// Prepare column headers
+			const columnHeaders = [
+				"NRP",
+				"Nama Lengkap",
+				"Username",
+				"Nilai Total",
+			];
+
+			// Add question columns dynamically (Jawaban + Skor + Rata-rata)
+			for (let i = 1; i <= maxQuestions; i++) {
+				columnHeaders.push(`Jawaban Soal ${i}`);
+				columnHeaders.push(`Skor Soal ${i}`);
+				columnHeaders.push(`Rata-rata Rubrik Soal ${i}`);
+			}
+
+			// Prepare data rows
+			const dataRows = validSubmissions.map((submission) => {
+				if (!submission) return [];
+				
+				const row: (string | number)[] = [
+					submission.student_nrp || "-",
+					submission.student_name || "-",
+					submission.student_username || "-",
+					submission.total_score || 0,
+				];
+
+				// Add answers, scores, and avg rubric for each question
+				if (submission.question_details) {
+					for (let i = 0; i < maxQuestions; i++) {
+						const qa = submission.question_details[i];
+						if (qa) {
+							row.push(qa.answer_text || "-");
+							row.push(qa.final_score || 0);
+							row.push(qa.rubric_rata_rata || 0);
+						} else {
+							row.push("-");
+							row.push(0);
+							row.push(0);
+						}
+					}
+				}
+
+				return row;
+			});
+
+			// Combine all data
+			const allData = [
+				...headerInfo,
+				columnHeaders,
+				...dataRows,
+			];
+
+			// Create workbook and worksheet
+			const wb = XLSX.utils.book_new();
+			const ws = XLSX.utils.aoa_to_sheet(allData);
+
+			// Set column widths
+			const colWidths = [
+				{ wch: 15 },  // NRP
+				{ wch: 25 },  // Nama Lengkap
+				{ wch: 15 },  // Username
+				{ wch: 12 },  // Nilai Total
+			];
+
+			// Add width for question columns (Jawaban + Skor + Rata-rata)
+			for (let i = 0; i < maxQuestions; i++) {
+				colWidths.push({ wch: 50 }); // Jawaban (wide)
+				colWidths.push({ wch: 12 }); // Skor
+				colWidths.push({ wch: 18 }); // Rata-rata Rubrik
+			}
+
+			ws['!cols'] = colWidths;
+
+			// Add worksheet to workbook
+			XLSX.utils.book_append_sheet(wb, ws, "Hasil Penilaian");
+
+			// Generate filename with format: NAMAKELAS_TIPE-TUGAS_TANGGAL.xlsx
+			const now = new Date();
+			const dateStr = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+			const className = (assignmentData.class_name || "Kelas").replace(/[^a-zA-Z0-9]/g, '_');
+			const assignmentTitle = assignmentData.title.replace(/[^a-zA-Z0-9]/g, '_');
+			const fileName = `${className}_${assignmentTitle}_${dateStr}.xlsx`;
+
+			// Save file
+			XLSX.writeFile(wb, fileName);
+			
+			toast.dismiss(loadingToast);
+			toast.success("Data berhasil diekspor ke Excel");
+		} catch (error) {
+			console.error("Error exporting to Excel:", error);
+			toast.dismiss(loadingToast);
+			const errorMessage = error instanceof Error ? error.message : "Gagal mengekspor data ke Excel";
+			toast.error(errorMessage);
 		}
 	};
 
@@ -135,6 +289,7 @@ function HasilPenilaianContent() {
 	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				{/* Header */}
@@ -168,18 +323,31 @@ function HasilPenilaianContent() {
 							</div>
 						</div>
 
-						<Button
-							onClick={handleAutoGradeAll}
-							variant="primary"
-							size="sm"
-							className="flex items-center gap-2"
-							disabled={autoGradeAll.isPending}
-						>
-							<Play className="w-4 h-4" weight="bold" />
-							{autoGradeAll.isPending
-								? "Menilai..."
-								: "Nilai Semua"}
-						</Button>
+						<div className="flex gap-2">
+							<Button
+								onClick={handleAutoGradeAll}
+								variant="primary"
+								size="sm"
+								className="flex items-center gap-2"
+								disabled={autoGradeAll.isPending}
+							>
+								<Play className="w-4 h-4" weight="bold" />
+								{autoGradeAll.isPending
+									? "Menilai..."
+									: "Nilai Semua"}
+							</Button>
+							
+							<Button
+								onClick={handleExportExcel}
+								variant="secondary"
+								size="sm"
+								className="flex items-center gap-2"
+								disabled={!grades || grades.length === 0}
+							>
+								<DownloadSimple className="w-4 h-4" weight="bold" />
+								Ekspor Excel
+							</Button>
+						</div>
 					</div>
 				</div>
 
@@ -464,6 +632,77 @@ function HasilPenilaianContent() {
 						</div>
 					</div>
 				</div>
+
+				{/* Histogram Distribusi Nilai */}
+				{grades.length > 0 && (
+					<div className="mb-6 sm:mb-8">
+						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
+							Distribusi Nilai
+						</h2>
+						<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6 lg:p-8">
+							<div className="flex items-end justify-center gap-4 sm:gap-6 h-64 sm:h-80">
+								{(() => {
+									// Create score ranges (0-5, 5-10, ..., 95-100)
+									const ranges: Array<{ min: number; max: number; count: number }> = [];
+									for (let i = 0; i <= 100; i += 5) {
+										ranges.push({ min: i, max: i + 5, count: 0 });
+									}
+
+									// Count scores in each range
+									grades.forEach((grade) => {
+										const score = grade.total_score;
+										const rangeIndex = Math.floor(score / 5);
+										if (ranges[rangeIndex]) {
+											ranges[rangeIndex].count++;
+										}
+									});
+
+									// Find max count for scaling
+									const maxCount = Math.max(...ranges.map(r => r.count), 1);
+
+									// Only show ranges that have data or are near data
+									const relevantRanges = ranges.filter((r, idx) => {
+										if (r.count > 0) return true;
+										// Show adjacent ranges for context
+										if (idx > 0 && ranges[idx - 1].count > 0) return true;
+										if (idx < ranges.length - 1 && ranges[idx + 1].count > 0) return true;
+										return false;
+									});
+
+									// Limit to show specific ranges if too many
+									const displayRanges = relevantRanges.length > 15 
+										? ranges.filter(r => r.min % 10 === 0 || r.count > 0)
+										: relevantRanges;
+
+									return displayRanges.map((range, index) => (
+										<div key={index} className="flex flex-col items-center flex-1 min-w-0">
+											<div
+												className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg relative hover:from-blue-600 hover:to-blue-500 transition-colors"
+												style={{
+													height: range.count > 0 ? `${(range.count / maxCount) * 250}px` : '4px',
+													minHeight: '4px',
+													maxHeight: '250px',
+												}}
+											>
+												{range.count > 0 && (
+													<div className="absolute -top-7 left-1/2 -translate-x-1/2 text-xs sm:text-sm text-black font-semibold whitespace-nowrap">
+														{range.count}
+													</div>
+												)}
+											</div>
+											<div className="mt-2 text-xs text-black font-medium text-center whitespace-nowrap">
+												{range.min}-{range.max}
+											</div>
+										</div>
+									));
+								})()}
+							</div>
+							<div className="mt-4 text-center text-sm text-gray-600">
+								Rentang Nilai (Per 5 Poin)
+							</div>
+						</div>
+					</div>
+				)}
 			</main>
 		</div>
 	);

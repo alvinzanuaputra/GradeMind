@@ -57,7 +57,7 @@ async def update_my_profile(
         )
         existing_user = result.scalar_one_or_none()
         if existing_user:
-            raise HTTPException(status_code=400, detail="Email already registered")
+            raise HTTPException(status_code=400, detail="Email sudah digunakan oleh pengguna lain")
         current_user.email = request.email
     
     if request.fullname is not None:
@@ -84,9 +84,9 @@ async def change_password(
     if not pwd_context.verify(request.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Password saat ini salah")
     
-    if len(request.new_password) < 6:
-        raise HTTPException(status_code=400, detail="Password harus minimal 6 karakter")
-    
+    if len(request.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password harus minimal 8 karakter")
+
     current_user.hashed_password = pwd_context.hash(request.new_password)
     await db.commit()
     

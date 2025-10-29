@@ -17,7 +17,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class LoginRequest(BaseModel):
-    email: str
+    email: str  # Bisa berisi email atau username
     password: str
 
 
@@ -46,27 +46,33 @@ async def login_for_access_token(
     request: Request = None,
     session: AsyncSession = Depends(get_session)
 ):
+    # Coba login dengan email
     result = await session.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
+    
+    # Jika tidak ditemukan dengan email, coba dengan username
+    if not user:
+        result = await session.execute(select(User).where(User.username == form_data.username))
+        user = result.scalar_one_or_none()
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Email/Username atau password salah",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Email/Username atau password salah",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is inactive",
+            detail="Akun pengguna tidak aktif",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -126,6 +132,7 @@ async def register_user(
         username=user_data.username,
         user_role=user_data.user_role,
         notelp=user_data.notelp,
+        nrp=user_data.nrp,
         institution=user_data.institution,
         biografi=user_data.biografi,
         profile_picture=user_data.profile_picture,
@@ -146,6 +153,7 @@ async def register_user(
         username=new_user.username,
         user_role=new_user.user_role,
         notelp=new_user.notelp,
+        nrp=new_user.nrp,
         institution=new_user.institution,
         biografi=new_user.biografi,
         profile_picture=new_user.profile_picture,
@@ -155,7 +163,7 @@ async def register_user(
     )
     
     return RegisterResponse(
-        message="User terdaftar berhasil",
+        message="Pengguna terdaftar berhasil",
         user=user_read
     )
 
@@ -166,25 +174,31 @@ async def login_user(
     request: Request,
     session: AsyncSession = Depends(get_session)
 ):
+    # Coba login dengan email
     result = await session.execute(select(User).where(User.email == login_data.email))
     user = result.scalar_one_or_none()
+    
+    # Jika tidak ditemukan dengan email, coba dengan username
+    if not user:
+        result = await session.execute(select(User).where(User.username == login_data.email))
+        user = result.scalar_one_or_none()
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Email/Username atau password salah"
         )
     
     if not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Email/Username atau password salah"
         )
     
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is inactive"
+            detail="Akun pengguna tidak aktif"
         )
     
     jwt_strategy = get_jwt_strategy()
@@ -243,14 +257,14 @@ async def get_current_user(
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing"
+            detail="Hilangnya header otorisasi"
         )
     
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format"
+            detail="Format header otorisasi tidak valid"
         )
     
     token = parts[1]
@@ -268,7 +282,7 @@ async def get_current_user(
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload"
+                detail="Token tidak valid"
             )
         
         stmt = select(User).where(User.id == int(user_id))
@@ -278,7 +292,7 @@ async def get_current_user(
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
+                detail="Pengguna tidak ditemukan"
             )
         
         is_oauth_user = not user.hashed_password or user.hashed_password == ""
@@ -301,19 +315,19 @@ async def get_current_user(
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired"
+            detail="Token Kadaluarsa"
         )
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Token tidak valid"
         )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Token tidak valid"
         )
 
 

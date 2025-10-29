@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
@@ -13,7 +12,7 @@ import {
 	useUpdateAssignment,
 	useAssignmentDetail,
 } from "@/hooks/useAssignments";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import {
 	ArrowLeft,
 	Books,
@@ -262,26 +261,22 @@ function NewAssignmentContent() {
 						<p className="text-gray-400 mb-4">
 							Hanya dosen yang dapat membuat atau mengedit tugas
 						</p>
-						<Button
-							onClick={() => router.push(`/kelas/${classId}`)}
-						>
-							Kembali ke Kelas
-						</Button>
-					</div>
+					<Button
+						onClick={() => router.push(`/kelas/${classId}`)}
+					>
+						Kembali ke Kelas
+					</Button>
 				</div>
-				<Footer />
 			</div>
-		);
-	}
-
-	if (isEditMode && isLoadingAssignment) {
+		</div>
+	);
+}	if (isEditMode && isLoadingAssignment) {
 		return (
 			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data tugas..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -289,6 +284,7 @@ function NewAssignmentContent() {
 	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				{/* Header */}

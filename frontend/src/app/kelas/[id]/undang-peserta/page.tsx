@@ -8,7 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useGetInviteCode } from "@/hooks/useClasses";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { ArrowLeft, Copy, Check, UserSwitch } from "phosphor-react";
 
 export default function InvitePesertaPage() {
@@ -123,6 +123,7 @@ function InvitePesertaContent() {
 	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				{/* Header */}

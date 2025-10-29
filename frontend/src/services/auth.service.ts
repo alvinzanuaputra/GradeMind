@@ -29,18 +29,4 @@ export const authService = {
 			token,
 		});
 	},
-
-	// Get Google OAuth URL
-	getGoogleAuthUrl: async (): Promise<{ authorization_url: string }> => {
-		return apiClient.get<{ authorization_url: string }>(
-			"/api/auth/oauth/google"
-		);
-	},
-
-	// Get GitHub OAuth URL
-	getGithubAuthUrl: async (): Promise<{ authorization_url: string }> => {
-		return apiClient.get<{ authorization_url: string }>(
-			"/api/auth/oauth/github"
-		);
-	},
 };

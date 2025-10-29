@@ -11,10 +11,10 @@ export interface User {
     biografi?: string;
     profile_picture?: string;
     user_role: UserRole;
+    nrp?: string;
     is_active: boolean;
     is_verified: boolean;
     is_superuser: boolean;
-    is_oauth_user?: boolean;
 }
 
 export interface UserCreate {
@@ -27,6 +27,7 @@ export interface UserCreate {
     institution?: string;
     biografi?: string;
     profile_picture?: string;
+    nrp?: string;
 }
 
 export interface UserUpdate {
@@ -39,6 +40,7 @@ export interface UserUpdate {
     biografi?: string;
     profile_picture?: string;
     password?: string;
+    nrp?: string;
 }
 
 export interface LoginRequest {
@@ -340,6 +342,8 @@ export interface SubmissionDetailResponse {
     submission_id: number;
     student_id: number;
     student_name: string;
+    student_username?: string;
+    student_nrp?: string;
     assignment_id: number;
     assignment_title: string;
     submission_type: SubmissionType;
@@ -348,6 +352,7 @@ export interface SubmissionDetailResponse {
     total_score?: number;
     max_score?: number;
     percentage?: number;
+    minimal_score?: number;
     avg_pemahaman?: number;
     avg_kelengkapan?: number;
     avg_kejelasan?: number;
@@ -355,6 +360,23 @@ export interface SubmissionDetailResponse {
     avg_embedding_similarity?: number;
     graded_at?: string;
     question_details: QuestionGradeDetail[];
+}
+
+export interface ExcelExportStudentData {
+    nrp: string;
+    nama_lengkap: string;
+    username: string;
+    nilai_total: number;
+    nilai_maksimal: number;
+    persentase: number;
+    [key: string]: string | number; // For dynamic jawaban_soal_N and skor_soal_N
+}
+
+export interface ExcelExportData {
+    class_name: string;
+    assignment_title: string;
+    kkm: number;
+    students: ExcelExportStudentData[];
 }
 
 // ==================== OCR TYPES ====================

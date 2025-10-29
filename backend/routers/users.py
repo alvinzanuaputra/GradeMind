@@ -12,7 +12,6 @@ from models.user_model import (
     UserRead,
     UserUpdate,
     UserSession,
-    UserOAuth,
     UserRole,
 )
 
@@ -25,6 +24,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
+    
 
 
 class UserResponse(BaseModel):
@@ -75,7 +75,7 @@ async def get_user_by_id(
     user = await user_service.get_user_by_id(user_id)
 
     if not user:
-        raise HTTPException(status_code=404, detail="not found")
+        raise HTTPException(status_code=404, detail="Tidak Ditemukan")
 
     return user
 
@@ -94,7 +94,7 @@ async def delete_user(
 
     user_service = await get_user_service(session)
     await user_service.delete_user(user_id)
-    return {"message": "User deleted successfully"}
+    return {"message": "Pengguna berhasil dihapus"}
 
 
 @router.patch("/me", response_model=UserRead)
@@ -111,6 +111,34 @@ async def update_current_user_profile(
 
     update_data = user_update.dict(exclude_unset=True)
 
+    # Validasi email jika ada perubahan
+    if "email" in update_data and update_data["email"]:
+        if update_data["email"] != db_user.email:
+            # Cek apakah email sudah digunakan user lain
+            email_check = await session.execute(
+                select(User).where(User.email == update_data["email"]).where(User.id != current_user.id)
+            )
+            existing_email_user = email_check.scalar_one_or_none()
+            if existing_email_user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Email sudah digunakan oleh pengguna lain"
+                )
+
+    # Validasi username jika ada perubahan
+    if "username" in update_data and update_data["username"]:
+        if update_data["username"] != db_user.username:
+            # Cek apakah username sudah digunakan user lain
+            username_check = await session.execute(
+                select(User).where(User.username == update_data["username"]).where(User.id != current_user.id)
+            )
+            existing_username_user = username_check.scalar_one_or_none()
+            if existing_username_user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Username sudah digunakan oleh pengguna lain"
+                )
+
     if "password" in update_data and update_data["password"]:
         update_data["hashed_password"] = pwd_context.hash(update_data["password"])
         del update_data["password"]
@@ -124,8 +152,21 @@ async def update_current_user_profile(
         await session.refresh(db_user)
     except Exception as e:
         await session.rollback()
+        # Tangani error khusus untuk unique constraint violation
+        error_message = str(e)
+        if "duplicate key value violates unique constraint" in error_message.lower():
+            if "email" in error_message.lower():
+                raise HTTPException(
+                    status_code=400,
+                    detail="Email sudah digunakan oleh pengguna lain"
+                )
+            elif "username" in error_message.lower():
+                raise HTTPException(
+                    status_code=400,
+                    detail="Username sudah digunakan oleh pengguna lain"
+                )
         raise HTTPException(
-            status_code=500, detail=f"Failed to update profile: {str(e)}"
+            status_code=500, detail="Gagal memperbarui profil. Silakan coba lagi."
         )
 
     return UserRead(
@@ -141,5 +182,4 @@ async def update_current_user_profile(
         is_active=db_user.is_active,
         is_superuser=db_user.is_superuser,
         is_verified=db_user.is_verified,
-        is_oauth_user=not bool(db_user.hashed_password),
     )

@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from core.db import get_session
-from models.user_model import User, UserOAuth, UserSession
+from models.user_model import User, UserSession
 from core.auth import get_jwt_strategy, ACCESS_TOKEN_EXPIRE_MINUTES
 import httpx
 import os
@@ -69,7 +69,7 @@ async def oauth_google_callback(code: str, request: Request):
         )
         
         if token_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get access token")
+            raise HTTPException(status_code=400, detail="Gagal untuk mengambil token akses")
         
         token_data = token_response.json()
         access_token = token_data.get("access_token")
@@ -81,14 +81,16 @@ async def oauth_google_callback(code: str, request: Request):
         )
         
         if user_info_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get user info")
-        
+            raise HTTPException(status_code=400, detail="Gagal untuk mengambil informasi pengguna")
+
         user_info = user_info_response.json()
     
     oauth_id = user_info.get("id")
     email = user_info.get("email")
     name = user_info.get("name", "")
     picture = user_info.get("picture")
+    
+    is_new_user = False  # Track if this is a new user
     
     result = await session.execute(
         select(UserOAuth).where(
@@ -113,6 +115,7 @@ async def oauth_google_callback(code: str, request: Request):
         user = result.scalar_one_or_none()
         
         if not user:
+            is_new_user = True  # This is a new user
             username = email.split("@")[0] + "_" + oauth_id[:6]
             
             from models.user_model import UserRole
@@ -169,7 +172,11 @@ async def oauth_google_callback(code: str, request: Request):
     session.add(new_session)
     await session.commit()
     
-    return RedirectResponse(url=f"{FRONTEND_URL}/dashboard?token={token}")
+    # Redirect to NRP page if new mahasiswa user, otherwise to dashboard
+    if is_new_user and user.user_role == "mahasiswa":
+        return RedirectResponse(url=f"{FRONTEND_URL}/oauth/nrp?token={token}")
+    else:
+        return RedirectResponse(url=f"{FRONTEND_URL}/dashboard?token={token}")
 
 
 @router.get("/oauth/github")
@@ -205,7 +212,7 @@ async def oauth_github_callback(code: str, request: Request):
                 if token_response.status_code != 200:
                     raise HTTPException(
                         status_code=400, 
-                        detail=f"Failed to get access token: {token_response.text}"
+                        detail=f"Gagal untuk mengambil token akses: {token_response.text}"
                     )
                 
                 token_data = token_response.json()
@@ -214,7 +221,7 @@ async def oauth_github_callback(code: str, request: Request):
                 if not access_token:
                     raise HTTPException(
                         status_code=400,
-                        detail=f"No access token in response: {token_data}"
+                        detail=f"Tidak ada token akses dalam respons: {token_data}"
                     )
                 
                 headers = {
@@ -227,7 +234,7 @@ async def oauth_github_callback(code: str, request: Request):
                 if user_info_response.status_code != 200:
                     raise HTTPException(
                         status_code=400, 
-                        detail=f"Failed to get user info: {user_info_response.text}"
+                        detail=f"Gagal untuk mengambil informasi pengguna: {user_info_response.text}"
                     )
                 
                 user_info = user_info_response.json()
@@ -243,6 +250,8 @@ async def oauth_github_callback(code: str, request: Request):
             email = primary_email or f"github_{oauth_id}@gmail.com"
             name = user_info.get("name") or user_info.get("login", "")
             avatar_url = user_info.get("avatar_url")
+            
+            is_new_user = False  # Track if this is a new user
             
             result = await session.execute(
                 select(UserOAuth).where(
@@ -266,6 +275,7 @@ async def oauth_github_callback(code: str, request: Request):
                 user = result.scalar_one_or_none()
                 
                 if not user:
+                    is_new_user = True  # This is a new user
                     username = user_info.get("login", "github_" + oauth_id[:6])
                     
                     from models.user_model import UserRole
@@ -314,11 +324,15 @@ async def oauth_github_callback(code: str, request: Request):
             session.add(new_session)
             await session.commit()
 
-            return RedirectResponse(url=f"{FRONTEND_URL}/dashboard?token={token}")
+            # Redirect to NRP page if new mahasiswa user, otherwise to dashboard
+            if is_new_user and user.user_role == "mahasiswa":
+                return RedirectResponse(url=f"{FRONTEND_URL}/oauth/nrp?token={token}")
+            else:
+                return RedirectResponse(url=f"{FRONTEND_URL}/dashboard?token={token}")
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error during GitHub OAuth: {str(e)}"
+            detail=f"Internal server error gagal untuk mengamankan token: {str(e)}"
         )

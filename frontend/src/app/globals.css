@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+/* Global whitespace preservation for textarea and answer display */
+textarea {
+  white-space: pre-wrap;
+}
+
+.answer-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

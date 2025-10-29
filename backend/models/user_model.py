@@ -24,6 +24,7 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     username = Column(String, unique=True, nullable=False, index=True)
     email = Column(String, unique=True, nullable=False, index=True)
     notelp = Column(String, nullable=True)
+    nrp = Column(String, nullable=True)  # NRP untuk mahasiswa ITS (optional)
     institution = Column(String, nullable=True)
     biografi = Column(Text, nullable=True)
     user_role = Column(SQLEnum(UserRole), default=UserRole.MAHASISWA, nullable=False)
@@ -33,24 +34,9 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
-    oauth_accounts = relationship("UserOAuth", back_populates="user", cascade="all, delete-orphan")
     created_classes = relationship("Kelas", back_populates="teacher", foreign_keys="[Kelas.teacher_id]")
     class_participants = relationship("ClassParticipant", back_populates="user")
     assignment_submissions = relationship("AssignmentSubmission", back_populates="student")
-
-
-class UserOAuth(Base):
-    __tablename__ = "users_oauth"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    oauth_provider = Column(String, nullable=False)
-    oauth_id = Column(String, nullable=False)
-    access_token = Column(Text, nullable=True)
-    refresh_token = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    
-    user = relationship("User", back_populates="oauth_accounts")
 
 
 class UserSession(Base):
@@ -76,6 +62,7 @@ class UserCreate(schemas.BaseUserCreate):
     password: str
     user_role: UserRole
     notelp: Optional[str] = None
+    nrp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None
     profile_picture: Optional[str] = None
@@ -88,13 +75,13 @@ class UserRead(schemas.BaseUser[int]):
     email: str
     user_role: UserRole
     notelp: Optional[str] = None
+    nrp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None
     profile_picture: Optional[str] = None
     is_active: bool
     is_superuser: bool
     is_verified: bool
-    is_oauth_user: bool = False
 
 
 class UserUpdate(schemas.BaseUserUpdate):
@@ -103,6 +90,7 @@ class UserUpdate(schemas.BaseUserUpdate):
     email: Optional[str] = None
     user_role: Optional[UserRole] = None
     notelp: Optional[str] = None
+    nrp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None
     profile_picture: Optional[str] = None

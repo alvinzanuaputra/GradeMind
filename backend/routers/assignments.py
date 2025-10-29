@@ -193,7 +193,7 @@ async def get_class_assignments(
         is_participant = result.scalar_one_or_none() is not None
 
         if not is_participant:
-            raise HTTPException(status_code=403, detail="Tidak punya permission untuk melihat tugas di kelas ini")
+            raise HTTPException(status_code=403, detail="Tidak punya akses permission untuk melihat tugas di kelas ini")
 
     result = await db.execute(
         select(Assignment)
@@ -253,7 +253,7 @@ async def get_assignment_detail(
         is_participant = result.scalar_one_or_none() is not None
 
         if not is_participant:
-            raise HTTPException(status_code=403, detail="Tidak punya permission untuk melihat tugas di kelas ini")
+            raise HTTPException(status_code=403, detail="Tidak punya akses permission untuk melihat tugas di kelas ini")
 
         if not assignment.is_published:
             raise HTTPException(status_code=403, detail="Tugas belum diterbitkan")
@@ -691,4 +691,3 @@ async def get_my_submission(
         "avg_embedding_similarity": submission.nilai.avg_embedding_similarity if submission.nilai else None,
         "graded_at": submission.nilai.graded_at if submission.nilai else None
     }
-

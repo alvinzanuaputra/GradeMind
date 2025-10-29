@@ -8,6 +8,7 @@ import Button from "@/components/Button";
 import { useClassDetail, useRemoveParticipant } from "@/hooks/useClasses";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft, Books, Trash, User } from "phosphor-react";
+import { Toaster } from "react-hot-toast";
 
 export default function PesertaPage() {
 	return (
@@ -102,6 +103,7 @@ function PesertaContent() {
 	return (
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -144,7 +146,7 @@ function PesertaContent() {
 									key={participant.id}
 									className={`rounded-2xl shadow-lg border border-black bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
 								>
-									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border border-black shadow">
+									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border border-black shadow bg-white">
 										{participant.profile_picture ? (
 											<>
 												{/* eslint-disable-next-line @next/next/no-img-element */}
@@ -154,24 +156,22 @@ function PesertaContent() {
 													className="w-full h-full object-cover"
 													width={56}
 													height={56}
-													onError={e => {
+													onError={(e) => {
 														const target = e.target as HTMLImageElement;
-														target.onerror = null;
-														target.src = '';
 														target.style.display = 'none';
 														const parent = target.parentElement;
-														if (parent && !parent.querySelector('.fallback-profile-icon')) {
-															const icon = document.createElement('div');
-															icon.className = 'fallback-profile-icon';
-															icon.innerHTML = '<svg class="w-7 h-7 text-dark" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
-															parent.appendChild(icon.firstChild as Node);
+														if (parent && !parent.querySelector('.fallback-icon')) {
+															const iconWrapper = document.createElement('div');
+															iconWrapper.className = 'fallback-icon flex items-center justify-center w-full h-full';
+															iconWrapper.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 256 256" class="text-gray-600"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>`;
+															parent.appendChild(iconWrapper);
 														}
 													}}
 												/>
 											</>
 										) : (
 											<User
-												className="w-7 h-7 text-dark"
+												className="w-7 h-7 text-gray-600"
 												weight="bold"
 											/>
 										)}

@@ -35,6 +35,9 @@ async def grade_question_via_tunnel(
         
         final_score = round((final_score_percentage / 100) * question_points, 2)
         
+        # Ensure final_score is never negative
+        final_score = max(0.0, final_score)
+        
         print(f"✅ AI grading completed:")
         print(f"   - Final Score: {final_score}/{question_points} ({final_score_percentage}%)")
         print(f"   - Rubric Scores: {rubric_scores}")
@@ -45,13 +48,13 @@ async def grade_question_via_tunnel(
             "final_score": final_score,
             "feedback": feedback,
             "rubric_scores": {
-                "pemahaman": rubric_scores.get("pemahaman", 0.0),
-                "kelengkapan": rubric_scores.get("kelengkapan", 0.0),
-                "kejelasan": rubric_scores.get("kejelasan", 0.0),
-                "analisis": rubric_scores.get("analisis", 0.0),
-                "rata_rata": rubric_scores.get("rata_rata", 0.0),
+                "pemahaman": max(0.0, rubric_scores.get("pemahaman", 0.0)),
+                "kelengkapan": max(0.0, rubric_scores.get("kelengkapan", 0.0)),
+                "kejelasan": max(0.0, rubric_scores.get("kejelasan", 0.0)),
+                "analisis": max(0.0, rubric_scores.get("analisis", 0.0)),
+                "rata_rata": max(0.0, rubric_scores.get("rata_rata", 0.0)),
             },
-            "embedding_similarity": embedding_similarity,
+            "embedding_similarity": max(0.0, embedding_similarity),
             "llm_time": llm_time,
             "similarity_time": similarity_time
         }
@@ -148,11 +151,15 @@ async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
     percentage = round((total_score / total_points * 100), 2) if total_points > 0 else 0.0
     num_questions = len(questions)
     
-    avg_pemahaman = round(sum(aggregate_pemahaman) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_kelengkapan = round(sum(aggregate_kelengkapan) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_kejelasan = round(sum(aggregate_kejelasan) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_analisis = round(sum(aggregate_analisis) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_similarity = round(sum(aggregate_similarity) / num_questions, 2) if num_questions > 0 else 0.0
+    # Ensure all aggregated values are non-negative
+    avg_pemahaman = max(0.0, round(sum(aggregate_pemahaman) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_kelengkapan = max(0.0, round(sum(aggregate_kelengkapan) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_kejelasan = max(0.0, round(sum(aggregate_kejelasan) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_analisis = max(0.0, round(sum(aggregate_analisis) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_similarity = max(0.0, round(sum(aggregate_similarity) / num_questions, 2)) if num_questions > 0 else 0.0
+    
+    # Ensure total_score is non-negative
+    total_score = max(0.0, total_score)
     
     print(f"\n{'='*60}")
     print(f"🏁 BATCH GRADING COMPLETED")

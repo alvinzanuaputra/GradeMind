@@ -37,12 +37,12 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           value={value}
           maxLength={maxLength}
           className={`
-            w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 transition-all resize-y
+            w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 transition-all resize-y whitespace-pre-wrap shadow-sm
             text-gray-900 placeholder-gray-400 bg-white
             ${
               error
                 ? "border-red-400 focus:ring-red-200 focus:border-red-500"
-                : "border-gray-300 focus:ring-yellow-200 focus:border-yellow-400 hover:border-gray-400"
+                : "border-gray-300 focus:ring-yellow-200 focus:border-yellow-400 hover:border-yellow-300"
             }
             ${
               props.disabled

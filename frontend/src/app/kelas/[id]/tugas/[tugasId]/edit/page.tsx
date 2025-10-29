@@ -5,14 +5,13 @@ import { useRouter, useParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Textarea from "@/components/Textarea";
 import { useAuth } from "@/context/AuthContext";
 import { assignmentService } from "@/services";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import {
 	ArrowLeft,
 	Books,
@@ -209,7 +208,6 @@ function EditAssignmentContent() {
 						<Button onClick={handleBack}>Kembali</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -221,7 +219,6 @@ function EditAssignmentContent() {
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data tugas..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -238,7 +235,6 @@ function EditAssignmentContent() {
 						<Button onClick={handleBack}>Kembali</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -246,6 +242,7 @@ function EditAssignmentContent() {
 	return (
 		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
 			<Navbar />
+			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				{/* Header */}
@@ -569,8 +566,6 @@ function EditAssignmentContent() {
 					</div>
 				</form>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }

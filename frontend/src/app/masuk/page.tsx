@@ -9,9 +9,6 @@ import AuthLayout from "@/components/AuthLayout";
 import GuestRoute from "@/components/GuestRoute";
 import Button from "@/components/Button";
 import PasswordInput from "@/components/PasswordInput";
-import Alert from "@/components/Alert";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginPage() {
@@ -35,7 +32,6 @@ function LoginContent() {
 		{}
 	);
 	const [isLoading, setIsLoading] = useState(false);
-	const [apiError, setApiError] = useState("");
 
 	// Handle OAuth callback
 	useEffect(() => {
@@ -68,9 +64,7 @@ function LoginContent() {
 		const newErrors: { email?: string; password?: string } = {};
 
 		if (!formData.email) {
-			newErrors.email = "Email wajib diisi";
-		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-			newErrors.email = "Format email tidak valid";
+			newErrors.email = "Nama Pengguna/Email wajib diisi";
 		}
 
 		if (!formData.password) {
@@ -85,7 +79,6 @@ function LoginContent() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setApiError("");
 
 		if (!validateForm()) {
 			return;
@@ -118,7 +111,6 @@ function LoginContent() {
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Login gagal";
-			setApiError(errorMessage);
 			toast.error(errorMessage, {
 				duration: 3000,
 				style: {
@@ -131,51 +123,22 @@ function LoginContent() {
 		}
 	};
 
-	const handleGoogleLogin = async () => {
-		try {
-			const response = await authService.getGoogleAuthUrl();
-			window.location.href = response.authorization_url;
-		} catch {
-			toast.error("Gagal memulai login Google", {
-				style: {
-					background: "#EF4444",
-					color: "#fff",
-				},
-			});
-		}
-	};
-
-	const handleGithubLogin = async () => {
-		try {
-			const response = await authService.getGithubAuthUrl();
-			window.location.href = response.authorization_url;
-		} catch {
-			toast.error("Gagal memulai login GitHub", {
-				style: {
-					background: "#EF4444",
-					color: "#fff",
-				},
-			});
-		}
-	};
-
 	return (
 		<AuthLayout>
 			<Toaster position="top-center" />
 			<form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-				<Alert type="error" message={apiError} />
 				<div>
 					<label
 						htmlFor="email"
 						className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
 					>
-						Email
+						Nama Pengguna/Email
 					</label>
 					<input
 						id="email"
 						name="email"
-						type="email"
-						placeholder="Tulis alamat email Anda"
+						type="text"
+						placeholder="Tulis nama pengguna atau email Anda"
 						value={formData.email}
 						onChange={handleChange}
 						className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-2 border-gray-300 rounded-full text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 hover:border-gray-400 transition-all"
@@ -207,36 +170,6 @@ function LoginContent() {
 				>
 					Login
 				</Button>
-
-				<div className="relative">
-					<div className="absolute inset-0 flex items-center">
-						<div className="w-full border-t border-gray-200"></div>
-					</div>
-					<div className="relative flex justify-center text-xs sm:text-sm">
-						<span className="px-4 bg-gray-50 text-gray-500">
-							Atau masuk sebagai mahasiswa dengan
-						</span>
-					</div>
-				</div>
-
-				<div className="grid grid-cols-2 gap-3 sm:gap-4">
-					<button
-						type="button"
-						onClick={handleGoogleLogin}
-						className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium text-xs sm:text-sm border border-gray-200"
-					>
-						<FcGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
-						<span className="hidden sm:inline">Google</span>
-					</button>
-					<button
-						type="button"
-						onClick={handleGithubLogin}
-						className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-xs sm:text-sm border border-gray-700"
-					>
-						<FaGithub className="w-4 h-4 sm:w-5 sm:h-5" />
-						<span className="hidden sm:inline">GitHub</span>
-					</button>
-				</div>
 
 				<div className="text-center">
 					<span className="text-xs sm:text-sm text-gray-600">

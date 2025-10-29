@@ -9,7 +9,7 @@ import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
 import { authService, classService } from "@/services";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import Image from "next/image";
 import {
   MagnifyingGlass,
@@ -105,7 +105,6 @@ function DashboardContent() {
   const [isSearching, setIsSearching] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [classCode, setClassCode] = useState("");
-  const [joinClassError, setJoinClassError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
@@ -146,7 +145,7 @@ function DashboardContent() {
 
   const handleJoinClass = async () => {
     if (!classCode.trim()) {
-      setJoinClassError("Kode kelas tidak boleh kosong");
+      toast.error("Kode kelas tidak boleh kosong");
       return;
     }
 
@@ -158,11 +157,10 @@ function DashboardContent() {
       toast.success(response.message || "Berhasil bergabung dengan kelas!");
       setIsJoinModalOpen(false);
       setClassCode("");
-      setJoinClassError(null);
       queryClient.invalidateQueries({ queryKey: ["classes"] });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setJoinClassError(
+      toast.error(
         error?.response?.data?.detail || error?.message || "Gagal bergabung dengan kelas"
       );
     } finally {
@@ -245,6 +243,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
+      <Toaster position="top-center" />
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -501,7 +500,6 @@ function DashboardContent() {
                 value={classCode}
                 onChange={(e) => {
                   setClassCode(e.target.value);
-                  setJoinClassError(null);
                 }}
                 onKeyPress={(e) => {
                   if (e.key === "Enter" && !isJoining) {
@@ -512,9 +510,6 @@ function DashboardContent() {
                 className="w-full px-4 py-3 bg-gray-50 rounded-lg border-2 border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
                 disabled={isJoining}
               />
-              {joinClassError && (
-                <div className="mt-2 text-sm text-red-600 rounded border border-red-500 px-2 py-1 bg-red-500/20">{joinClassError}</div>
-              )}
             </div>
 
             <div className="flex gap-3">
@@ -522,7 +517,6 @@ function DashboardContent() {
                 onClick={() => {
                   setIsJoinModalOpen(false);
                   setClassCode("");
-                  setJoinClassError(null);
                 }}
                 className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
                 disabled={isJoining}
