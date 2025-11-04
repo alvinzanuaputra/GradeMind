@@ -1,0 +1,9 @@
+Computer vision is a field of artificial intelligence that
+enables computers to interpret and understood visual information
+from the world , such as images and videos . It involves
+techniques that allow machines to identify objects , detect
+patterns , and make decisions based on visual input
+
+Computer vision has many applications in real life . It is used in
+facial recognition , medical image analysis , Self-driving cars ,
+industrial automation , and security systems
