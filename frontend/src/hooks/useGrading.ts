@@ -3,7 +3,6 @@ import { gradingService } from "@/services";
 import { GradeSubmissionRequest } from "@/types";
 import toast from "react-hot-toast";
 
-// Query keys
 export const gradingKeys = {
   statistics: (assignmentId: number) => ["grading", "statistics", assignmentId] as const,
   grades: (assignmentId: number) => ["grading", "grades", assignmentId] as const,
@@ -11,7 +10,6 @@ export const gradingKeys = {
   exportData: (assignmentId: number) => ["grading", "export", assignmentId] as const,
 };
 
-// Get assignment statistics
 export function useAssignmentStatistics(assignmentId: number) {
   return useQuery({
     queryKey: gradingKeys.statistics(assignmentId),
@@ -20,7 +18,6 @@ export function useAssignmentStatistics(assignmentId: number) {
   });
 }
 
-// Get assignment grades
 export function useAssignmentGrades(assignmentId: number) {
   return useQuery({
     queryKey: gradingKeys.grades(assignmentId),
@@ -29,7 +26,6 @@ export function useAssignmentGrades(assignmentId: number) {
   });
 }
 
-// Get student grades
 export function useStudentGrades(studentId: number) {
   return useQuery({
     queryKey: gradingKeys.studentGrades(studentId),
@@ -38,7 +34,6 @@ export function useStudentGrades(studentId: number) {
   });
 }
 
-// Grade submission manually
 export function useGradeSubmission() {
   const queryClient = useQueryClient();
 
@@ -55,7 +50,6 @@ export function useGradeSubmission() {
   });
 }
 
-// Auto-grade single submission
 export function useAutoGradeSubmission() {
   const queryClient = useQueryClient();
 
@@ -71,7 +65,6 @@ export function useAutoGradeSubmission() {
   });
 }
 
-// Auto-grade all submissions
 export function useAutoGradeAllSubmissions() {
   const queryClient = useQueryClient();
 
@@ -87,7 +80,6 @@ export function useAutoGradeAllSubmissions() {
   });
 }
 
-// Delete grade
 export function useDeleteGrade() {
   const queryClient = useQueryClient();
 
@@ -103,11 +95,10 @@ export function useDeleteGrade() {
   });
 }
 
-// Get excel export data
 export function useExcelExportData(assignmentId: number) {
   return useQuery({
     queryKey: gradingKeys.exportData(assignmentId),
     queryFn: () => gradingService.getExcelExportData(assignmentId),
-    enabled: false, // Manual trigger only
+    enabled: false,
   });
 }

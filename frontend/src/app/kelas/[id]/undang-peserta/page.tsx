@@ -124,9 +124,7 @@ function InvitePesertaContent() {
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 			<Toaster position="top-center" />
-
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				{/* Header */}
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
 						<button
@@ -162,7 +160,7 @@ function InvitePesertaContent() {
 								type="text"
 								value={inviteData.invite_link}
 								readOnly
-								className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 bg-white border border-gray-700 rounded-xl text-sm sm:text-base text-black focus:outline-none focus:border-gray-500 transition-colors"
+								className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 bg-white border-2 border-gray-300 rounded-md text-sm sm:text-base text-black focus:outline-none focus:border-blue-500 transition-colors shadow-md"
 							/>
 							<button
 								onClick={handleCopyLink}
@@ -183,15 +181,14 @@ function InvitePesertaContent() {
 							</button>
 						</div>
 					</div>
-
-					{/* Kode Kelas Section */}
+					
 					<div className="mb-6 sm:mb-8">
 						<label className="block text-black text-base sm:text-lg font-semibold mb-3">
 							Kode Kelas
 						</label>
-						<div className="bg-white border border-gray-700 rounded-xl p-4 sm:p-6">
+						<div className="bg-white border-2 border-gray-300 rounded-md p-4 sm:p-6 shadow-xl">
 							<div className="flex items-center justify-between">
-								<span className="text-yellow-400 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-wider">
+								<span className="text-yellow-500 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-wider">
 									{inviteData.class_code}
 								</span>
 								<button
@@ -214,8 +211,6 @@ function InvitePesertaContent() {
 							</div>
 						</div>
 					</div>
-
-					{/* Info Text */}
 					<p className="text-gray-400 text-center text-xs sm:text-sm">
 						Bagikan tautan dan kode kelas ini ke peserta didik di
 						kelas ini

@@ -11,27 +11,22 @@ export interface UserResponse {
 }
 
 export const userService = {
-  // Get all users (superuser only)
   getAllUsers: async (skip = 0, limit = 100): Promise<UserResponse[]> => {
     return apiClient.get<UserResponse[]>(`/api/users?skip=${skip}&limit=${limit}`);
   },
 
-  // Get current user
   getCurrentUser: async (): Promise<UserResponse> => {
     return apiClient.get<UserResponse>("/api/users/me");
   },
 
-  // Get user by ID
   getUserById: async (userId: number): Promise<UserResponse> => {
     return apiClient.get<UserResponse>(`/api/users/${userId}`);
   },
 
-  // Update current user profile
   updateProfile: async (data: UserUpdate): Promise<User> => {
     return apiClient.patch<User>("/api/users/me", data);
   },
 
-  // Delete user by ID (superuser only)
   deleteUser: async (userId: number): Promise<{ message: string }> => {
     return apiClient.delete<{ message: string }>(`/api/users/${userId}`);
   },

@@ -122,7 +122,6 @@ function EditClassContent() {
 			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				{/* Header */}
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-6">
 						<button
@@ -147,10 +146,7 @@ function EditClassContent() {
 						</div>
 					</div>
 				</div>
-
-				{/* Form */}
 				<form onSubmit={handleSubmit} className="space-y-6">
-					{/* Nama Kelas Section */}
 					<div>
 						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
 							Nama Kelas
@@ -160,12 +156,10 @@ function EditClassContent() {
 							value={className}
 							onChange={(e) => setClassName(e.target.value)}
 							placeholder="Masukkan nama kelas"
-							className="w-full px-4 py-3 bg-white border border-gray-700 rounded-xl text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors"
+							className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors shadow-lg"
 							disabled={isSubmitting}
 						/>
 					</div>
-
-					{/* Deskripsi Section */}
 					<div>
 						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
 							Deskripsi
@@ -175,12 +169,11 @@ function EditClassContent() {
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="Masukkan deskripsi kelas (opsional)"
 							rows={6}
-							className="w-full px-4 py-3 bg-white border border-gray-700 rounded-xl text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors resize-none"
+							className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors resize-none shadow-lg"
 							disabled={isSubmitting}
 						/>
 					</div>
 
-					{/* Submit Button */}
 					<div className="flex justify-center pt-4">
 						<Button
 							type="submit"

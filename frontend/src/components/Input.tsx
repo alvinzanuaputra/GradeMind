@@ -26,7 +26,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={`
-              w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm
+              w-full px-4 py-2.5 border-2 rounded-md focus:outline-none focus:ring-2 transition-all shadow-sm
               bg-white text-gray-900
               placeholder-gray-400
               ${icon ? "pl-10" : ""}

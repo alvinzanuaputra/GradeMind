@@ -21,9 +21,9 @@ const NavLink: React.FC<{
 }> = ({ href, isActive, onClick, children }) => (
 	   <Link
 		   href={href}
-		   className={`px-3 py-2 rounded-full text-sm font-medium transition-colors hover:bg-gray-100
+		   className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-md active:scale-95
 			   ${isActive
-				   ? "text-yellow-600 border border-yellow-500 bg-yellow-50 hover:bg-yellow-100/100"
+				   ? "text-yellow-600 border border-yellow-500 bg-yellow-50 hover:bg-yellow-100/100 scale-105"
 				   : "text-gray-600"}
 		   `}
 		   onClick={onClick}
@@ -71,12 +71,12 @@ const Navbar: React.FC = () => {
 	const homeUrl = isAuthenticated ? "/dashboard" : "/";
 
 	return (
-		<nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+		<nav className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-all duration-300">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
-					<Link href="/" className="flex items-center space-x-2">
-						<div className="lg:text-4xl sm:text-2xl font-extrabold">
-							<span className="text-yellow-500">GRADE</span>
+					<Link href="/" className="flex items-center space-x-2 group">
+						<div className="lg:text-4xl sm:text-3xl text-2xl font-extrabold transition-all duration-300 transform group-hover:scale-105">
+							<span className="text-yellow-500 group-hover:animate-pulse">GRADE</span>
 							<span className="text-gray-900"> MIND</span>
 						</div>
 					</Link>
@@ -92,16 +92,19 @@ const Navbar: React.FC = () => {
 								onClick={() =>
 									setShowProfileMenu(!showProfileMenu)
 								}
-								className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border border-gray-600 hover:border-yellow-400 overflow-hidden bg-yellow-400 shadow-lg"
+								className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110 border border-gray-600 hover:border-yellow-400 hover:shadow-xl overflow-hidden bg-yellow-400 shadow-lg relative group ${
+									showProfileMenu ? 'animate-zoomOutFade' : ''
+								}`}
 								aria-label="Profile"
 							>
+								<div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 								{isAuthenticated && user?.profile_picture ? (
 									<Image
 										src={user.profile_picture}
 										alt="profil default icon"
 										width={40}
 										height={40}
-										className="w-full h-full object-cover"
+										className="w-full h-full object-cover relative z-10"
 										unoptimized
 										onError={(e) => {
 											const target = e.target as HTMLImageElement;
@@ -119,13 +122,13 @@ const Navbar: React.FC = () => {
 									/>
 								) : (
 									<UserCircle
-										className="w-6 h-6 text-white"
+										className="w-6 h-6 text-white relative z-10"
 										weight="bold"
 									/>
 								)}
 							</button>
 							{showProfileMenu && (
-								<div className="absolute right-0 mt-2 w-86 bg-white rounded-md shadow-lg border border-gray-700 py-2 z-50">
+								<div className="absolute right-0 mt-4 w-86 bg-white rounded-md shadow-xl border border-gray-700 py-2 z-50 animate-slideDown">
 									{isAuthenticated ? (
 										<>
 											<div className="px-4 py-3 border-b border-gray-700">
@@ -180,10 +183,10 @@ const Navbar: React.FC = () => {
 													</div>
 												</div>
 											</div>
-											<div className="px-2 py-2">
+											<div className="px-3 py-2">
 												<Link
 													href="/profil"
-													className="block w-full text-left px-4 py-2 text-sm text-black hover:bg-yellow-400 rounded-md transition-colors"
+													className="block w-full text-left px-4 py-2 text-sm text-black hover:bg-yellow-400 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 group"
 													onClick={() =>
 														setShowProfileMenu(
 															false
@@ -192,7 +195,7 @@ const Navbar: React.FC = () => {
 												>
 													<div className="flex items-center gap-2">
 														<PencilSimple
-															className="w-4 h-4"
+															className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12"
 															weight="bold"
 														/>
 														Lihat Profil
@@ -205,11 +208,11 @@ const Navbar: React.FC = () => {
 															false
 														);
 													}}
-													className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 rounded-md transition-colors hover:text-black cursor-pointer"
+													className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 hover:text-black cursor-pointer group"
 												>
 													<div className="flex items-center gap-2">
 														<SignOut
-															className="w-4 h-4"
+															className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
 															weight="bold"
 														/>
 														Keluar
@@ -232,7 +235,7 @@ const Navbar: React.FC = () => {
 											<div className="px-4 py-2">
 												<Link
 													href="/masuk"
-													className="block w-full text-center px-4 py-2 text-sm text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-md transition-colors font-medium"
+													className="block w-full text-center px-4 py-2 text-sm text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95 font-medium"
 													onClick={() =>
 														setShowProfileMenu(
 															false
@@ -251,17 +254,17 @@ const Navbar: React.FC = () => {
 					<div className="md:hidden flex items-center">
 						<button
 							onClick={() => setShowMobileMenu(!showMobileMenu)}
-							className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border bg-gray-100 border-black hover:bg-gray-200"
+							className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-xs bg-gray-100 hover:bg-gray-200 hover:shadow-md"
 							aria-label="Toggle menu"
 						>
 							{showMobileMenu ? (
 								<X
-									className="w-6 h-6 text-dark"
+									className="w-6 h-6 text-dark transition-transform duration-300 rotate-90"
 									weight="bold"
 								/>
 							) : (
 								<List
-									className="w-6 h-6 text-dark"
+									className="w-6 h-6 text-dark transition-transform duration-300"
 									weight="bold"
 								/>
 							)}
@@ -276,9 +279,9 @@ const Navbar: React.FC = () => {
 						<div className="px-4 py-4 space-y-1">
 							<Link
 								href={homeUrl}
-								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all ${isActive(homeUrl)
-									? "text-yellow-400 underline"
-									: "text-dark hover:text-gray-500"
+								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 ${isActive(homeUrl)
+									? "text-yellow-400 bg-yellow-50 scale-105"
+									: "text-dark hover:text-gray-500 hover:bg-gray-50"
 									}`}
 								onClick={() => setShowMobileMenu(false)}
 							>
@@ -286,9 +289,9 @@ const Navbar: React.FC = () => {
 							</Link>
 							<Link
 								href="/tentang"
-								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all ${isActive("/tentang")
-									? "text-yellow-400 underline"
-									: "text-dark hover:text-gray-500 "
+								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 ${isActive("/tentang")
+									? "text-yellow-400 bg-yellow-50 scale-105"
+									: "text-dark hover:text-gray-500 hover:bg-gray-50"
 									}`}
 								onClick={() => setShowMobileMenu(false)}
 							>
@@ -352,11 +355,11 @@ const Navbar: React.FC = () => {
 									</div>
 									<Link
 										href="/profil"
-										className="flex items-center px-4 py-3 text-base text-black hover:bg-yellow-500 rounded-lg transition-all"
+										className="flex items-center px-4 py-3 text-base text-black hover:bg-yellow-500 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 group"
 										onClick={() => setShowMobileMenu(false)}
 									>
 										<PencilSimple
-											className="w-5 h-5 text-black"
+											className="w-5 h-5 text-black transition-transform duration-300 group-hover:rotate-12"
 											weight="bold"
 										/>
 										<span className="ml-3">
@@ -368,10 +371,10 @@ const Navbar: React.FC = () => {
 											handleLogout();
 											setShowMobileMenu(false);
 										}}
-										className="flex items-center w-full px-4 py-3 text-base text-red-500 hover:bg-red-500 hover:text-black rounded-lg transition-all"
+										className="flex items-center w-full px-4 py-3 text-base text-red-500 hover:bg-red-500 hover:text-black rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 group"
 									>
 										<SignOut
-											className="w-5 h-5"
+											className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
 											weight="bold"
 										/>
 										<span className="ml-3">Keluar</span>
@@ -381,7 +384,7 @@ const Navbar: React.FC = () => {
 								<div className="pt-2">
 									<Link
 										href="/masuk"
-										className="flex items-center justify-center px-4 py-3 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-lg transition-all shadow-md"
+										className="flex items-center justify-center px-4 py-3 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95 shadow-md"
 										onClick={() => setShowMobileMenu(false)}
 									>
 										<span className="ml-2">

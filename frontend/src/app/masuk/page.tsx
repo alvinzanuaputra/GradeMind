@@ -33,11 +33,9 @@ function LoginContent() {
 	);
 	const [isLoading, setIsLoading] = useState(false);
 
-	// Handle OAuth callback
 	useEffect(() => {
 		const token = searchParams.get("token");
 		if (token) {
-			// Token dari OAuth callback
 			toast.success("Login berhasil!");
 			localStorage.setItem("token", token);
 			setTimeout(() => {
@@ -46,15 +44,12 @@ function LoginContent() {
 		}
 	}, [searchParams]);
 
-	// GuestRoute already handles redirect, no need for duplicate check
-
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value, type, checked } = e.target;
 		setFormData((prev) => ({
 			...prev,
 			[name]: type === "checkbox" ? checked : value,
 		}));
-		// Clear error when user types
 		if (errors[name as keyof typeof errors]) {
 			setErrors((prev) => ({ ...prev, [name]: undefined }));
 		}
@@ -92,10 +87,8 @@ function LoginContent() {
 				password: formData.password,
 			});
 
-			// Save auth data
 			login(response.user, response.access_token, formData.rememberMe);
 
-			// Show success toast
 			toast.success("Login berhasil!", {
 				duration: 1000,
 				style: {
@@ -104,7 +97,6 @@ function LoginContent() {
 				},
 			});
 
-			// Redirect to dashboard with refresh
 			setTimeout(() => {
 				window.location.href = "/dashboard";
 			}, 1500);

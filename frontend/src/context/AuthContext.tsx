@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const login = (user: User, token: string, rememberMe?: boolean) => {
 		const loginTimestamp = new Date().toISOString();
-		const expiryHours = rememberMe ? 24 * 7 : 1 / 24; // 7 days if remember me, else 1 hour
+		const expiryHours = rememberMe ? 24 * 7 : 1 / 24;
 
 		setCookie("user", JSON.stringify(user), { expires: expiryHours });
 		setCookie("token", token, { expires: expiryHours });

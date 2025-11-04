@@ -263,7 +263,6 @@ function RegisterContent() {
           )}
         </div>
 
-        {/* NRP field - only show for mahasiswa role */}
         {formData.user_role === "mahasiswa" && (
           <div>
             <label

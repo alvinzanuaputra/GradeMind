@@ -68,15 +68,12 @@ function ProfileContent() {
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			// Validate file type
 			if (!file.type.startsWith("image/")) {
 				toast.error("File harus berupa gambar!");
 				return;
 			}
-
-			// Validate file size (max 5MB)
-			if (file.size > 5 * 1024 * 1024) {
-				toast.error("Ukuran gambar maksimal 5MB!");
+			if (file.size > 10 * 1024 * 1024) {
+				toast.error("Ukuran gambar maksimal 10MB!");
 				return;
 			}
 
@@ -119,21 +116,16 @@ function ProfileContent() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setErrors({});
-
 		if (!formData.fullName.trim()) {
 			toast.error("Nama lengkap wajib diisi");
 			return;
 		}
-
 		if (!formData.email.trim()) {
 			toast.error("Email wajib diisi");
 			return;
 		}
-
 		setIsLoading(true);
-
 		try {
-			// Prepare update data
 			const updateData = {
 				fullname: formData.fullName,
 				email: formData.email,
@@ -144,11 +136,7 @@ function ProfileContent() {
 				nrp: formData.nrp,
 				profile_picture: profilePicture,
 			};
-
-			// Call API to update profile
 			const updatedUser = await userService.updateProfile(updateData);
-
-			// Update user in context
 			updateUser(updatedUser);
 			toast.success("Profil berhasil diperbarui!");
 		} catch (error) {
@@ -199,17 +187,13 @@ function ProfileContent() {
 		}
 
 		setIsLoading(true);
-
 		try {
-			// Call API to change password
 			await profileService.changePassword({
 				current_password: passwordData.currentPassword,
 				new_password: passwordData.newPassword,
 			});
 
 			toast.success("Kata sandi berhasil diubah!");
-
-			// Clear password fields
 			setPasswordData({
 				currentPassword: "",
 				newPassword: "",
@@ -228,7 +212,6 @@ function ProfileContent() {
 				errorMessage.includes("salah") ||
 				errorMessage.includes("incorrect")
 			) {
-				// Current password is incorrect
 			} else if (errorMessage.includes("OAuth")) {
 				setShowPasswordSection(false);
 			}
@@ -264,7 +247,7 @@ function ProfileContent() {
 					<div>
 						<div className="flex items-center gap-4">
 							<div
-								className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400 shadow-lg bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+								className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-yellow-400 shadow-xl bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
 								onClick={() => profilePicture && setShowImageModal(true)}
 								title="Klik untuk melihat foto profil"
 							>
@@ -277,7 +260,6 @@ function ProfileContent() {
 										className="w-full h-full object-cover"
 										unoptimized
 										onError={(e) => {
-											// Fallback to default icon if image fails to load
 											const target = e.target as HTMLImageElement;
 											target.style.display = "none";
 											if (target.nextElementSibling) {
@@ -305,7 +287,7 @@ function ProfileContent() {
 								<button
 									type="button"
 									onClick={handleImageClick}
-									className="px-4 py-2 bg-transparent border-2 border-yellow-500 rounded-lg text-black hover:bg-yellow-400 transition-colors text-sm font-medium flex items-center gap-2 mt-2"
+									className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 rounded-md text-black transition-colors text-sm font-bold flex items-center gap-2 mt-2 shadow-lg"
 								>
 									<Camera
 										className="w-4 h-4"
@@ -383,7 +365,6 @@ function ProfileContent() {
 							error={errors.institution}
 						/>
 					</div>
-					{/* NRP field - only show for mahasiswa role */}
 					{user?.user_role === "mahasiswa" && (
 						<Input
 							id="nrp"
@@ -411,7 +392,7 @@ function ProfileContent() {
 							placeholder="Ceritakan tentang diri kamu..."
 							value={formData.bio}
 							onChange={handleChange}
-							className="w-full px-4 py-3 bg-transparent border border-black rounded-lg text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors resize-none"
+							className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-md text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none shadow-sm"
 						/>
 						{errors.bio && (
 							<p className="mt-2 text-sm text-red-400">
@@ -440,12 +421,9 @@ function ProfileContent() {
 						</Button>
 					</div>
 				</form>
-
-
-				{/* Password Section */}
-				<div className="mt-6 border-t border-gray-300 pt-4">
+				<div className="mt-6 border-t-2 border-gray-300 pt-6">
 						<div className="mb-6">
-							<h2 className="text-xl font-semibold text-black mb-2">
+							<h2 className="text-xl font-bold text-black mb-2">
 								Ubah Kata Sandi
 							</h2>
 							<p className="text-sm text-gray-600">
@@ -532,12 +510,9 @@ function ProfileContent() {
 							</form>
 						)}
 					</div>
-				
-
-				{/* Image Viewer Modal */}
 				{showImageModal && (
 					<div
-						className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+						className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
 						onClick={() => setShowImageModal(false)}
 					>
 						<div
@@ -546,7 +521,7 @@ function ProfileContent() {
 						>
 							<button
 								onClick={() => setShowImageModal(false)}
-								className="bg-white absolute -top-8 right-3 text-black hover:text-yellow-500 transition-colors text-sm font-medium px-2 py-1 rounded-lg"
+								className="bg-yellow-400 hover:bg-yellow-500 absolute -top-8 right-3 text-black transition-colors text-sm font-bold px-4 py-2 rounded-md shadow-lg"
 							>
 								Tutup ✕
 							</button>
@@ -558,10 +533,9 @@ function ProfileContent() {
 											alt="Foto Profil"
 											width={800}
 											height={800}
-											className="max-w-full max-h-[90vh] object-contain rounded-lg"
+											className="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
 											unoptimized
 											onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-												// Fallback to default icon if image fails to load in modal
 												const target = e.target as HTMLImageElement;
 												target.style.display = "none";
 												if (target.nextElementSibling) {

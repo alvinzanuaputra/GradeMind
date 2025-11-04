@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
+import ConfirmModal from "@/components/ConfirmModal";
 import { useClassDetail, useRemoveParticipant } from "@/hooks/useClasses";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft, Books, Trash, User } from "phosphor-react";
@@ -26,26 +28,29 @@ function PesertaContent() {
 
 	const { data: classData, isLoading } = useClassDetail(classId);
 	const removeParticipant = useRemoveParticipant();
+	
+	const [showRemoveModal, setShowRemoveModal] = useState(false);
+	const [selectedParticipant, setSelectedParticipant] = useState<{ id: number; name: string } | null>(null);
 
 	const handleBack = () => {
 		router.push(`/kelas/${classId}`);
 	};
 
-	const handleRemoveParticipant = async (
-		userId: number,
-		userName: string
-	) => {
-		if (
-			window.confirm(
-				`Apakah Anda yakin ingin menghapus ${userName} dari kelas ini?`
-			)
-		) {
-			try {
-				await removeParticipant.mutateAsync({ classId, userId });
-			} catch (error) {
-				console.error("Error removing participant:", error);
-			}
+	const handleRemoveParticipant = async () => {
+		if (!selectedParticipant) return;
+		
+		setShowRemoveModal(false);
+		try {
+			await removeParticipant.mutateAsync({ classId, userId: selectedParticipant.id });
+			setSelectedParticipant(null);
+		} catch (error) {
+			console.error("Error removing participant:", error);
 		}
+	};
+
+	const handleOpenRemoveModal = (userId: number, userName: string) => {
+		setSelectedParticipant({ id: userId, name: userName });
+		setShowRemoveModal(true);
 	};
 
 	const isTeacher = user?.id === classData?.teacher_id;
@@ -80,8 +85,6 @@ function PesertaContent() {
 	}
 
 	const participants = classData.participants || [];
-
-	// Array of gradient color classes
 	const GRADIENTS = [
 		'from-blue-500 to-blue-700',
 		'from-yellow-500 to-yellow-700',
@@ -104,6 +107,21 @@ function PesertaContent() {
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 			<Toaster position="top-center" />
+			<ConfirmModal
+				isOpen={showRemoveModal}
+				onClose={() => {
+					setShowRemoveModal(false);
+					setSelectedParticipant(null);
+				}}
+				onConfirm={handleRemoveParticipant}
+				title="Hapus Peserta"
+				message={`Apakah Anda yakin ingin menghapus ${selectedParticipant?.name} dari kelas ini?`}
+				confirmText="Ya, Hapus"
+				cancelText="Batal"
+				isLoading={removeParticipant.isPending}
+				isDangerous={true}
+			/>
+			
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -144,9 +162,9 @@ function PesertaContent() {
 							return (
 								<div
 									key={participant.id}
-									className={`rounded-2xl shadow-lg border border-black bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
+									className={`rounded-md shadow-xl hover:shadow-2xl bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
 								>
-									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border border-black shadow bg-white">
+									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center shadow-md bg-white">
 										{participant.profile_picture ? (
 											<>
 												{/* eslint-disable-next-line @next/next/no-img-element */}
@@ -188,12 +206,12 @@ function PesertaContent() {
 										participant.user_id !== classData.teacher_id && (
 											<button
 												onClick={() =>
-													handleRemoveParticipant(
+													handleOpenRemoveModal(
 														participant.user_id,
 														participant.fullname
 													)
 												}
-												className="text-red-100 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-400/20"
+												className="text-red-100 hover:text-white transition-colors p-2 rounded-md hover:bg-red-400/20 shadow-md"
 												title="Hapus peserta"
 											>
 												<Trash
@@ -208,17 +226,17 @@ function PesertaContent() {
 					</div>
 					{participants.length === 0 && (
 						<div className="text-center py-12 sm:py-20">
-							<div className="max-w-md mx-auto">
-								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+							<div className="max-w-md mx-auto bg-white rounded-md shadow-xl p-8 border-2 border-gray-100">
+								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-md bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-md">
 									<Books
 										className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400"
 										weight="bold"
 									/>
 								</div>
-								<h3 className="text-lg sm:text-xl font-semibold text-dark mb-2">
+								<h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">
 									Belum Ada Peserta
 								</h3>
-								<p className="text-sm sm:text-base text-gray-400">
+								<p className="text-sm sm:text-base text-gray-600">
 									Undang peserta untuk bergabung ke kelas ini
 								</p>
 							</div>

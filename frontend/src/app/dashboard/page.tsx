@@ -126,7 +126,6 @@ function DashboardContent() {
     retry: 1,
   });
 
-  // Debounce search query
   useEffect(() => {
     if (searchQuery === "") {
       setDebouncedSearchQuery("");
@@ -197,7 +196,6 @@ function DashboardContent() {
     router.push(`/kelas/${classId}/edit`);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       if (openDropdownId !== null) {
@@ -251,14 +249,13 @@ function DashboardContent() {
               Kelas Saya
             </h1>
           </div>
-          {/* Search */}
           <div className="relative w-full sm:w-64">
             <input
               type="text"
               placeholder="Cari kelas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 bg-white rounded-3xl border-2 border-black text-sm sm:text-base text-gray-900 placeholder-gray-700 focus:outline-none focus:border-yellow-500 transition-colors"
+              className="w-full px-4 py-2 pl-10 bg-white rounded-md border border-gray-400 shadow-md text-sm sm:text-base text-gray-900 placeholder-gray-700 focus:outline-none focus:border-yellow-500 transition-colors"
             />
             <MagnifyingGlass
               className="w-5 h-5 text-black absolute left-3 top-1/2 -translate-y-1/2"
@@ -284,9 +281,9 @@ function DashboardContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {user?.user_role === "dosen" && (
               <Link href="/kelas/baru">
-                <div className="relative h-48 sm:h-52 rounded-2xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 flex items-center justify-center group">
+                <div className="relative h-48 sm:h-52 rounded-md overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 shadow-lg hover:shadow-xl flex items-center justify-center group">
                   <div className="text-center">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-md bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors shadow-md">
                       <Plus
                         className="w-7 h-7 sm:w-8 sm:h-8 text-yellow-500 group-hover:text-yellow-400"
                         weight="bold"
@@ -303,10 +300,10 @@ function DashboardContent() {
             {user?.user_role === "mahasiswa" && (
               <div
                 onClick={() => setIsJoinModalOpen(true)}
-                className="relative h-48 sm:h-52 rounded-2xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 flex items-center justify-center group"
+                className="relative h-48 sm:h-52 rounded-md overflow-hidden cursor-pointer transition-all hover:scale-[1.02] bg-slate-200 border-2 border-dashed border-gray-700 hover:border-yellow-600 shadow-lg hover:shadow-xl flex items-center justify-center group"
               >
                 <div className="text-center">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 rounded-md bg-gray-500 group-hover:bg-gray-400 flex items-center justify-center transition-colors shadow-md">
                     <Plus
                       className="w-7 h-7 sm:w-8 sm:h-8 text-yellow-500 group-hover:text-yellow-400"
                       weight="bold"
@@ -328,9 +325,8 @@ function DashboardContent() {
               <div key={cls.id} className="relative">
                 <Link href={`/kelas/${cls.id}`}>
                   <div
-                    className={`relative h-48 sm:h-52 rounded-2xl overflow-hidden transition-all hover:scale-[1.02] shadow-lg cursor-pointer bg-gradient-to-br ${theme.color}`}
+                    className={`relative h-48 sm:h-52 rounded-md overflow-hidden transition-all hover:scale-[1.02] shadow-xl hover:shadow-2xl cursor-pointer bg-gradient-to-br ${theme.color}`}
                   >
-                    {/* Background Image with Overlay */}
                     <div className="absolute inset-0">
                       <Image
                         priority
@@ -345,7 +341,7 @@ function DashboardContent() {
 
                     <div className="relative z-10 p-4 sm:p-5 h-full flex flex-col">
                       <div className="flex items-start justify-between mb-auto">
-                        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-md">
                           <Books
                             className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                             weight="fill"
@@ -370,7 +366,7 @@ function DashboardContent() {
                             </button>
                             {openDropdownId === cls.id && (
                               <div
-                                className="absolute right-0 mt-2 w-48 bg-[#1e1f22] rounded-lg shadow-lg border border-gray-700 z-50"
+                                className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-2xl border-2 border-gray-200 z-50"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -382,10 +378,10 @@ function DashboardContent() {
                                     e.stopPropagation();
                                     handleEditClass(cls.id);
                                   }}
-                                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-white hover:bg-gray-700 transition-colors rounded-t-lg"
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-blue-50 transition-colors rounded-t-md"
                                 >
-                                  <Pencil className="w-4 h-4" weight="bold" />
-                                  <span>Edit Kelas</span>
+                                  <Pencil className="w-5 h-5 text-blue-600" weight="bold" />
+                                  <span className="font-medium">Edit Kelas</span>
                                 </button>
                                 <button
                                   onClick={(e) => {
@@ -394,10 +390,10 @@ function DashboardContent() {
                                     handleDeleteClass(cls.id, cls.name);
                                   }}
                                   disabled={isDeletingId === cls.id}
-                                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-400 hover:bg-gray-700 transition-colors rounded-b-lg disabled:opacity-50"
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors rounded-b-md disabled:opacity-50 border-t border-gray-100"
                                 >
-                                  <Trash className="w-4 h-4" weight="bold" />
-                                  <span>
+                                  <Trash className="w-5 h-5" weight="bold" />
+                                  <span className="font-medium">
                                     {isDeletingId === cls.id
                                       ? "Menghapus..."
                                       : "Hapus Kelas"}
@@ -445,17 +441,17 @@ function DashboardContent() {
         )}
         {!isSearching && filteredClasses.length === 0 && !isLoading && (
           <div className="text-center py-12 sm:py-20">
-            <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-gray-200 flex items-center justify-center">
+            <div className="max-w-md mx-auto bg-white rounded-md p-8 border-2 border-gray-100">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-md bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-md">
                 <Books
                   className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400"
                   weight="bold"
                 />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">
                 Belum Ada Kelas
               </h3>
-              <p className="text-sm sm:text-base text-gray-500 mb-6 sm:mb-8">
+              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
                 {debouncedSearchQuery
                   ? "Tidak ada kelas yang cocok dengan pencarian"
                   : user?.user_role === "dosen"
@@ -466,7 +462,6 @@ function DashboardContent() {
           </div>
         )}
       </main>
-      {/* Join Class Modal */}
       {isJoinModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">

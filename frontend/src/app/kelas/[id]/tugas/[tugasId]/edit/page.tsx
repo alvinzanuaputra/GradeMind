@@ -195,7 +195,7 @@ function EditAssignmentContent() {
 
 	if (user?.user_role !== "dosen") {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
@@ -214,7 +214,7 @@ function EditAssignmentContent() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data tugas..." />
@@ -225,7 +225,7 @@ function EditAssignmentContent() {
 
 	if (error || !assignment) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
@@ -240,7 +240,7 @@ function EditAssignmentContent() {
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 			<Toaster position="top-center" />
 
@@ -273,7 +273,6 @@ function EditAssignmentContent() {
 							</div>
 						</div>
 
-						{/* Save Button - Desktop */}
 						<div className="hidden sm:block">
 							<Button
 								onClick={handleSubmit}
@@ -291,7 +290,6 @@ function EditAssignmentContent() {
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-8">
-					{/* Basic Information */}
 					<div className="bg-[#1e1f22] border border-gray-700 rounded-xl p-6">
 						<h2 className="text-xl font-semibold text-white mb-6">
 							Informasi Dasar
@@ -312,8 +310,6 @@ function EditAssignmentContent() {
 									required
 								/>
 							</div>
-
-							{/* Description */}
 							<div>
 								<label className="block text-sm font-medium text-gray-300 mb-2">
 									Deskripsi
@@ -327,8 +323,6 @@ function EditAssignmentContent() {
 									rows={4}
 								/>
 							</div>
-
-							{/* Deadline */}
 							<div>
 								<label className="block text-sm font-medium text-gray-300 mb-2">
 									Deadline
@@ -344,8 +338,6 @@ function EditAssignmentContent() {
 									Kosongkan jika tidak ada deadline
 								</p>
 							</div>
-
-							{/* Published Status */}
 							<div>
 								<label className="flex items-center gap-3 cursor-pointer">
 									<input
@@ -377,8 +369,6 @@ function EditAssignmentContent() {
 							</div>
 						</div>
 					</div>
-
-					{/* Questions Section */}
 					<div className="bg-[#1e1f22] border border-gray-700 rounded-xl p-6">
 						<div className="flex items-center justify-between mb-6">
 							<h2 className="text-xl font-semibold text-white">
@@ -408,7 +398,7 @@ function EditAssignmentContent() {
 								{questions.map((question, index) => (
 									<div
 										key={index}
-										className="bg-[#2b2d31] border border-gray-700 rounded-lg p-4"
+										className="bg-white border border-gray-700 rounded-lg p-4"
 									>
 										<div className="flex items-start justify-between mb-4">
 											<h3 className="text-lg font-semibold text-white">
@@ -438,7 +428,6 @@ function EditAssignmentContent() {
 										</div>
 
 										<div className="space-y-4">
-											{/* Question Text */}
 											<div>
 												<label className="block text-sm font-medium text-gray-300 mb-2">
 													Pertanyaan{" "}
@@ -462,8 +451,6 @@ function EditAssignmentContent() {
 													required
 												/>
 											</div>
-
-											{/* Reference Answer */}
 											<div>
 												<label className="block text-sm font-medium text-gray-300 mb-2">
 													Kunci Jawaban{" "}
@@ -491,8 +478,6 @@ function EditAssignmentContent() {
 													sebagai acuan penilaian AI
 												</p>
 											</div>
-
-											{/* Points */}
 											<div>
 												<label className="block text-sm font-medium text-gray-300 mb-2">
 													Poin{" "}
@@ -523,7 +508,6 @@ function EditAssignmentContent() {
 							</div>
 						)}
 
-						{/* Total Score Info */}
 						{questions.length > 0 && (
 							<div className="mt-6 pt-4 border-t border-gray-700">
 								<div className="flex items-center justify-between">
@@ -542,7 +526,6 @@ function EditAssignmentContent() {
 						)}
 					</div>
 
-					{/* Action Buttons */}
 					<div className="flex gap-4 justify-center">
 						<Button
 							type="button"

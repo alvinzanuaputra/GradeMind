@@ -55,8 +55,6 @@ function NewClassContent() {
 			});
 
 			toast.success("Kelas berhasil dibuat!");
-			
-			// Invalidate queries to trigger refetch
 			await queryClient.invalidateQueries({ queryKey: ["classes"] });
 			
 			router.push("/dashboard");
@@ -93,7 +91,6 @@ function NewClassContent() {
 			<Toaster position="top-center" />
 
 			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				{/* Header */}
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-6">
 						<button
@@ -118,10 +115,7 @@ function NewClassContent() {
 						</div>
 					</div>
 				</div>
-
-				{/* Form */}
 				<form onSubmit={handleSubmit} className="space-y-6">
-					{/* Nama Kelas Section */}
 					<div>
 						<h2 className="text-lg sm:text-xl font-semibold text-black mb-4">
 							Nama Kelas
@@ -131,7 +125,7 @@ function NewClassContent() {
 							value={className}
 							onChange={(e) => setClassName(e.target.value)}
 							placeholder="Masukkan nama kelas"
-							className="bg-white w-full px-4 py-3 border-2 border-gray-700 rounded-xl text-black placeholder-black focus:outline-none focus:border-yellow-500 transition-colors"
+							className="bg-white w-full px-4 py-3 border-2 border-gray-300 rounded-md text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors shadow-md"
 							disabled={isSubmitting}
 						/>
 					</div>
@@ -144,7 +138,7 @@ function NewClassContent() {
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="Masukkan deskripsi kelas"
 							rows={6}
-							className="bg-white w-full px-4 py-3 border-2 border-gray-700 rounded-xl text-black placeholder-black focus:outline-none focus:border-yellow-500 transition-colors resize-none"
+							className="bg-white w-full px-4 py-3 border-2 border-gray-300 rounded-md text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none shadow-md"
 							disabled={isSubmitting}
 						/>
 						<p className="text-sm text-yellow-600 underline mt-2">

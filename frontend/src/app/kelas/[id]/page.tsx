@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
+import ConfirmModal from "@/components/ConfirmModal";
 import { useAuth } from "@/context/AuthContext";
 import { useClassDetail } from "@/hooks/useClasses";
 import {
@@ -74,6 +75,9 @@ function ClassDetailContent() {
 	const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 	const [isClassMenuOpen, setIsClassMenuOpen] = useState(false);
 	const [isDeletingClass, setIsDeletingClass] = useState(false);
+	const [showDeleteClassModal, setShowDeleteClassModal] = useState(false);
+	const [showDeleteAssignmentModal, setShowDeleteAssignmentModal] = useState(false);
+	const [selectedAssignment, setSelectedAssignment] = useState<{ id: number; title: string } | null>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const classMenuRef = useRef<HTMLDivElement>(null);
 
@@ -90,15 +94,7 @@ function ClassDetailContent() {
 
 	const handleDeleteClass = async () => {
 		if (!classData) return;
-
-		if (
-			!window.confirm(
-				`Apakah Anda yakin ingin menghapus kelas "${classData.name}"? Semua data tugas dan peserta akan hilang. Tindakan ini tidak dapat dibatalkan.`
-			)
-		) {
-			return;
-		}
-
+		setShowDeleteClassModal(false);
 		setIsDeletingClass(true);
 		setIsClassMenuOpen(false);
 
@@ -116,25 +112,31 @@ function ClassDetailContent() {
 		}
 	};
 
+	const handleOpenDeleteClassModal = () => {
+		setIsClassMenuOpen(false);
+		setShowDeleteClassModal(true);
+	};
 
 
 
-	const handleDeleteAssignment = async (
-		assignmentId: number,
-		assignmentTitle: string
-	) => {
-		if (
-			window.confirm(
-				`Apakah Anda yakin ingin menghapus tugas "${assignmentTitle}"?`
-			)
-		) {
-			try {
-				await deleteAssignment.mutateAsync(assignmentId);
-				setOpenMenuId(null);
-			} catch (error) {
-				console.error("Error deleting assignment:", error);
-			}
+
+	const handleDeleteAssignment = async () => {
+		if (!selectedAssignment) return;
+		
+		setShowDeleteAssignmentModal(false);
+		try {
+			await deleteAssignment.mutateAsync(selectedAssignment.id);
+			setOpenMenuId(null);
+			setSelectedAssignment(null);
+		} catch (error) {
+			console.error("Error deleting assignment:", error);
 		}
+	};
+
+	const handleOpenDeleteAssignmentModal = (assignmentId: number, assignmentTitle: string) => {
+		setSelectedAssignment({ id: assignmentId, title: assignmentTitle });
+		setShowDeleteAssignmentModal(true);
+		setOpenMenuId(null);
 	};
 
 	const handleEditAssignment = (assignmentId: number) => {
@@ -196,9 +198,33 @@ function ClassDetailContent() {
 		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
 			<Toaster position="top-center" />
+			<ConfirmModal
+				isOpen={showDeleteClassModal}
+				onClose={() => setShowDeleteClassModal(false)}
+				onConfirm={handleDeleteClass}
+				title="Hapus Kelas"
+				message={`Apakah Anda yakin ingin menghapus kelas "${classData?.name}"? Semua data tugas dan peserta akan hilang. Tindakan ini tidak dapat dibatalkan.`}
+				confirmText="Ya, Hapus Kelas"
+				cancelText="Batal"
+				isLoading={isDeletingClass}
+				isDangerous={true}
+			/>
+			<ConfirmModal
+				isOpen={showDeleteAssignmentModal}
+				onClose={() => {
+					setShowDeleteAssignmentModal(false);
+					setSelectedAssignment(null);
+				}}
+				onConfirm={handleDeleteAssignment}
+				title="Hapus Tugas"
+				message={`Apakah Anda yakin ingin menghapus tugas "${selectedAssignment?.title}"? Tindakan ini tidak dapat dibatalkan.`}
+				confirmText="Ya, Hapus Tugas"
+				cancelText="Batal"
+				isLoading={deleteAssignment.isPending}
+				isDangerous={true}
+			/>
 
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				{/* Header */}
 				<div className="mb-6 sm:mb-8">
 					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
 						<div className="flex items-center gap-3 sm:gap-4 flex-1">
@@ -231,27 +257,27 @@ function ClassDetailContent() {
 												/>
 											</button>
 											{isClassMenuOpen && (
-												<div className="absolute left-0 top-full mt-2 w-48 bg-white border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+												<div className="absolute left-0 top-full mt-2 w-48 bg-white border-2 border-gray-200 rounded-md shadow-2xl z-50 overflow-hidden">
 													<button
 														onClick={handleEditClass}
-														className="w-full px-4 py-3 text-left text-dark hover:bg-yellow-500 transition-colors flex items-center gap-3"
+														className="w-full px-4 py-3 text-left text-gray-700 hover:bg-blue-50 transition-colors flex items-center gap-3"
 													>
 														<Pencil
-															className="w-4 h-4"
+															className="w-5 h-5 text-blue-600"
 															weight="bold"
 														/>
-														<span>Edit Kelas</span>
+														<span className="font-medium">Edit Kelas</span>
 													</button>
 													<button
-														onClick={handleDeleteClass}
+														onClick={handleOpenDeleteClassModal}
 														disabled={isDeletingClass}
-														className="w-full px-4 py-3 text-left text-red-400 hover:text-black hover:bg-red-500 transition-colors flex items-center gap-3 disabled:opacity-50"
+														className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 disabled:opacity-50 border-t border-gray-100"
 													>
 														<Trash
-															className="w-4 h-4"
+															className="w-5 h-5"
 															weight="bold"
 														/>
-														<span>
+														<span className="font-medium">
 															{isDeletingClass
 																? "Menghapus..."
 																: "Hapus Kelas"}
@@ -309,7 +335,7 @@ function ClassDetailContent() {
 						)}
 					</div>
 
-					<div className="border p-6 rounded-lg">
+					<div className="border-2 border-gray-100 p-6 rounded-md shadow-lg bg-white">
 						<p className="text-gray-800 font-bold text-sm">Deskripsi :</p>
 						{classData.description && (
 							<p className="text-gray-600 text-sm sm:text-base">
@@ -323,21 +349,18 @@ function ClassDetailContent() {
 					<h2 className="text-lg sm:text-xl font-semibold text-dark mb-4">
 						Semua Daftar Penilaian
 					</h2>
-
-					{/* Assignment Cards Grid */}
 					<div className="space-y-3 sm:space-y-4">
 						{assignments && assignments.length > 0 ? (
 							<>
 								{assignments.map((assignment, index) => {
 									const cardColor = getAssignmentColor(index);
-									// Disable hover if any menu is open and not this card
 									const isMenuOpen = openMenuId !== null;
 									const isThisMenuOpen = openMenuId === assignment.id;
 									return (
 										<div
 											key={assignment.id}
 											className={
-												`${cardColor} rounded-xl p-3 sm:p-4 flex items-center justify-between transition-all shadow-lg cursor-pointer relative ` +
+												`${cardColor} rounded-md p-3 sm:p-4 flex items-center justify-between transition-all shadow-xl hover:shadow-2xl cursor-pointer relative` +
 												(!isMenuOpen || isThisMenuOpen ? 'hover:scale-[1.01]' : 'pointer-events-none opacity-80')
 											}
 											style={isThisMenuOpen ? {zIndex: 60} : {}}
@@ -392,12 +415,10 @@ function ClassDetailContent() {
 															weight="bold"
 														/>
 													</button>
-
-													{/* Dropdown Menu */}
 													{isThisMenuOpen && (
 														<div
 															ref={menuRef}
-															className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-700 rounded-lg shadow-xl z-[70] overflow-hidden"
+															className="absolute right-0 top-full mt-2 w-48 bg-white border-2 border-gray-200 rounded-md shadow-2xl z-[70] overflow-hidden"
 															onClick={(e) =>
 																e.stopPropagation()
 															}
@@ -409,31 +430,31 @@ function ClassDetailContent() {
 																		assignment.id
 																	);
 																}}
-																className="w-full px-4 py-3 text-left text-dark hover:bg-yellow-500 transition-colors flex items-center gap-3"
+																className="w-full px-4 py-3 text-left text-gray-700 hover:bg-blue-50 transition-colors flex items-center gap-3"
 															>
 																<PencilSimple
-																	className="w-5 h-5"
+																	className="w-5 h-5 text-blue-600"
 																	weight="bold"
 																/>
-																<span>
+																<span className="font-medium">
 																	Edit Tugas
 																</span>
 															</button>
 															<button
 																onClick={(e) => {
 																	e.stopPropagation();
-																	handleDeleteAssignment(
+																	handleOpenDeleteAssignmentModal(
 																		assignment.id,
 																		assignment.title
 																	);
 																}}
-																className="w-full px-4 py-3 text-left text-red-500 hover:text-black hover:bg-red-500 transition-colors flex items-center gap-3"
+																className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 border-t border-gray-100"
 															>
 																<Trash
 																	className="w-5 h-5"
 																	weight="bold"
 																/>
-																<span>
+																<span className="font-medium">
 																	Hapus Tugas
 																</span>
 															</button>
@@ -455,13 +476,13 @@ function ClassDetailContent() {
 								onClick={() =>
 									router.push(`/kelas/${classId}/tugas/baru`)
 								}
-								className="w-full border-2 border-dashed border-gray-300 hover:border-yellow-400 bg-white rounded-xl p-4 sm:p-6 flex items-center justify-center gap-2 sm:gap-3 transition-all hover:bg-gray-50 group hover:scale-[1.02]"
+								className="w-full border-2 border-dashed border-gray-300 hover:border-yellow-400 bg-white rounded-md p-4 sm:p-6 flex items-center justify-center gap-2 sm:gap-3 transition-all hover:bg-gray-50 group hover:scale-[1.02] shadow-lg hover:shadow-xl"
 							>
 								<Plus
 									className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 group-hover:text-yellow-400"
 									weight="bold"
 								/>
-								<span className="text-sm sm:text-base text-black font-medium">
+								<span className="text-sm sm:text-base text-black font-bold">
 									Tambah Penilaian Baru
 								</span>
 							</button>

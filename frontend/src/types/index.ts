@@ -1,4 +1,3 @@
-// ==================== USER & AUTH TYPES ====================
 export type UserRole = "dosen" | "mahasiswa";
 
 export interface User {
@@ -66,7 +65,6 @@ export interface AuthState {
     loginTimestamp?: string;
 }
 
-// ==================== PROFILE TYPES ====================
 export interface UpdateProfileRequest {
     fullname?: string;
     email?: string;
@@ -86,7 +84,6 @@ export interface ProfileResponse {
     profile_picture?: string;
 }
 
-// ==================== CLASS TYPES ====================
 export interface CreateClassRequest {
     name: string;
     description?: string;
@@ -133,7 +130,6 @@ export interface InviteCodeResponse {
     class_name: string;
 }
 
-// ==================== ASSIGNMENT TYPES ====================
 export type AssignmentType = "file_based" | "text_based";
 export type SubmissionType = "typed" | "ocr";
 
@@ -145,7 +141,7 @@ export interface CreateAssignmentRequest {
     deadline?: string;
     max_score?: number;
     minimal_score?: number;
-    questions?: QuestionCreate[]; // Questions as an array of QuestionCreate objects
+    questions?: QuestionCreate[];
 }
 
 export interface QuestionUpdate {
@@ -163,13 +159,13 @@ export interface UpdateAssignmentRequest {
     max_score?: number;
     minimal_score?: number;
     is_published?: boolean;
-    questions?: QuestionUpdate[]; // Questions as an array of QuestionUpdate objects
+    questions?: QuestionUpdate[];
 }
 
 export interface QuestionCreate {
     question_text: string;
     reference_answer: string;
-    points?: number; // Optional with default value of 10 in backend
+    points?: number;
 }
 
 export interface Question {
@@ -252,7 +248,6 @@ export interface MySubmissionResponse {
     graded_at?: string;
 }
 
-// ==================== GRADING TYPES ====================
 export interface GradeSubmissionRequest {
     total_score: number;
 }
@@ -369,7 +364,7 @@ export interface ExcelExportStudentData {
     nilai_total: number;
     nilai_maksimal: number;
     persentase: number;
-    [key: string]: string | number; // For dynamic jawaban_soal_N and skor_soal_N
+    [key: string]: string | number;
 }
 
 export interface ExcelExportData {
@@ -379,7 +374,6 @@ export interface ExcelExportData {
     students: ExcelExportStudentData[];
 }
 
-// ==================== OCR TYPES ====================
 export interface OCRResultRead {
     success: boolean;
     message: string;
@@ -388,7 +382,6 @@ export interface OCRResultRead {
     processed_at?: string;
 }
 
-// ==================== DASHBOARD TYPES ====================
 export interface DashboardStats {
     total_classes?: number;
     total_assignments?: number;
@@ -403,7 +396,6 @@ export interface RecentActivity {
     timestamp: string;
 }
 
-// ==================== LEGACY UI TYPES (for existing components) ====================
 export interface LoginFormData {
     emailOrUsername: string;
     password: string;
@@ -444,7 +436,6 @@ export interface PasswordStrengthResult {
     hasSpecialChar: boolean;
 }
 
-// ==================== API RESPONSE TYPES ====================
 export interface ApiResponse<T> {
     success: boolean;
     data?: T;
