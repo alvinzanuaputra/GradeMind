@@ -1,20 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	classService,
+} from "@/services";
+import {
 	CreateClassRequest,
 	UpdateClassRequest,
 	JoinClassRequest,
-} from "@/services";
+} from "@/types";
 import toast from "react-hot-toast";
 
-// Query keys
 export const classKeys = {
 	all: ["classes"] as const,
 	detail: (id: number) => ["classes", id] as const,
 	search: (query: string) => ["classes", "search", query] as const,
 };
 
-// Get all classes
 export function useClasses() {
 	return useQuery({
 		queryKey: classKeys.all,
@@ -22,7 +22,6 @@ export function useClasses() {
 	});
 }
 
-// Get class details
 export function useClassDetail(classId: number) {
 	return useQuery({
 		queryKey: classKeys.detail(classId),
@@ -31,7 +30,6 @@ export function useClassDetail(classId: number) {
 	});
 }
 
-// Search classes
 export function useSearchClasses(query: string) {
 	return useQuery({
 		queryKey: classKeys.search(query),
@@ -40,7 +38,6 @@ export function useSearchClasses(query: string) {
 	});
 }
 
-// Create class
 export function useCreateClass() {
 	const queryClient = useQueryClient();
 
@@ -57,7 +54,6 @@ export function useCreateClass() {
 	});
 }
 
-// Update class
 export function useUpdateClass() {
 	const queryClient = useQueryClient();
 
@@ -82,7 +78,6 @@ export function useUpdateClass() {
 	});
 }
 
-// Delete class
 export function useDeleteClass() {
 	const queryClient = useQueryClient();
 
@@ -98,7 +93,6 @@ export function useDeleteClass() {
 	});
 }
 
-// Join class
 export function useJoinClass() {
 	const queryClient = useQueryClient();
 
@@ -114,7 +108,6 @@ export function useJoinClass() {
 	});
 }
 
-// Get invite code
 export function useGetInviteCode() {
 	return useMutation({
 		mutationFn: (classId: number) => classService.getInviteCode(classId),
@@ -124,7 +117,6 @@ export function useGetInviteCode() {
 	});
 }
 
-// Remove participant
 export function useRemoveParticipant() {
 	const queryClient = useQueryClient();
 

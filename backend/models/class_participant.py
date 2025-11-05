@@ -15,4 +15,3 @@ class ClassParticipant(Base):
     user = relationship("User", back_populates="class_participants")
 
     __table_args__ = (UniqueConstraint('kelas_id', 'user_id', name='_kelas_user_uc'),)
-

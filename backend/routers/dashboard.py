@@ -33,7 +33,7 @@ async def get_dashboard_stats(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
-    if current_user.user_role == UserRole.DOSEN:
+    if current_user.user_role == UserRole.DOSEN: # type: ignore
         result = await db.execute(
             select(func.count(Kelas.id)).where(Kelas.teacher_id == current_user.id)
         )
@@ -63,7 +63,6 @@ async def get_dashboard_stats(
             .where(Kelas.teacher_id == current_user.id)
         )
         avg_score = result.scalar_one()
-        
         return {
             "total_classes": total_classes,
             "total_assignments": total_assignments,
@@ -123,7 +122,7 @@ async def get_recent_activity(
 ):
     activities = []
     
-    if current_user.user_role == UserRole.DOSEN:
+    if current_user.user_role == UserRole.DOSEN: # type: ignore
         result = await db.execute(
             select(Assignment)
             .options(selectinload(Assignment.kelas))
@@ -171,4 +170,3 @@ async def get_recent_activity(
                 })
     
     return {"activities": activities}
-

@@ -1,5 +1,4 @@
 import Navbar from "./Navbar";
-import Footer from "./Footer";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -11,14 +10,14 @@ export default function AuthLayout({
   title = "GRADE MIND",
 }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#2b2d31] dark:bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-10">
             <h1 className="text-5xl sm:text-6xl font-bold mb-2">
               <span className="text-yellow-400">{title.split(" ")[0]}</span>
-              <span className="text-white">
+              <span className="text-gray-900">
                 {" "}
                 {title.split(" ").slice(1).join(" ")}
               </span>
@@ -27,7 +26,6 @@ export default function AuthLayout({
           {children}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

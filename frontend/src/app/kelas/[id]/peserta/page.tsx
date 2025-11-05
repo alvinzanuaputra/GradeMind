@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
+import ConfirmModal from "@/components/ConfirmModal";
 import { useClassDetail, useRemoveParticipant } from "@/hooks/useClasses";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft, Books, Trash, User } from "phosphor-react";
+import { Toaster } from "react-hot-toast";
 
 export default function PesertaPage() {
 	return (
@@ -26,49 +28,51 @@ function PesertaContent() {
 
 	const { data: classData, isLoading } = useClassDetail(classId);
 	const removeParticipant = useRemoveParticipant();
+	
+	const [showRemoveModal, setShowRemoveModal] = useState(false);
+	const [selectedParticipant, setSelectedParticipant] = useState<{ id: number; name: string } | null>(null);
 
 	const handleBack = () => {
 		router.push(`/kelas/${classId}`);
 	};
 
-	const handleRemoveParticipant = async (
-		userId: number,
-		userName: string
-	) => {
-		if (
-			window.confirm(
-				`Apakah Anda yakin ingin menghapus ${userName} dari kelas ini?`
-			)
-		) {
-			try {
-				await removeParticipant.mutateAsync({ classId, userId });
-			} catch (error) {
-				console.error("Error removing participant:", error);
-			}
+	const handleRemoveParticipant = async () => {
+		if (!selectedParticipant) return;
+		
+		setShowRemoveModal(false);
+		try {
+			await removeParticipant.mutateAsync({ classId, userId: selectedParticipant.id });
+			setSelectedParticipant(null);
+		} catch (error) {
+			console.error("Error removing participant:", error);
 		}
+	};
+
+	const handleOpenRemoveModal = (userId: number, userName: string) => {
+		setSelectedParticipant({ id: userId, name: userName });
+		setShowRemoveModal(true);
 	};
 
 	const isTeacher = user?.id === classData?.teacher_id;
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data peserta..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	if (!classData) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-white">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+						<h2 className="text-xl font-semibold text-dark mb-2">
 							Kelas tidak ditemukan
 						</h2>
 						<Button onClick={() => router.push("/kelas")}>
@@ -76,22 +80,54 @@ function PesertaContent() {
 						</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	const participants = classData.participants || [];
+	const GRADIENTS = [
+		'from-blue-500 to-blue-700',
+		'from-yellow-500 to-yellow-700',
+		'from-green-500 to-green-700',
+		'from-purple-500 to-purple-700',
+		'from-pink-500 to-pink-700',
+		'from-orange-500 to-orange-700',
+		'from-teal-500 to-teal-700',
+		'from-red-500 to-red-700',
+		'from-indigo-500 to-indigo-700',
+		'from-emerald-500 to-emerald-700',
+		'from-fuchsia-500 to-fuchsia-700',
+		'from-cyan-500 to-cyan-700',
+		'from-lime-500 to-lime-700',
+		'from-amber-500 to-amber-700',
+		'from-sky-500 to-sky-700',
+	];
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-white">
 			<Navbar />
+			<Toaster position="top-center" />
+			<ConfirmModal
+				isOpen={showRemoveModal}
+				onClose={() => {
+					setShowRemoveModal(false);
+					setSelectedParticipant(null);
+				}}
+				onConfirm={handleRemoveParticipant}
+				title="Hapus Peserta"
+				message={`Apakah Anda yakin ingin menghapus ${selectedParticipant?.name} dari kelas ini?`}
+				confirmText="Ya, Hapus"
+				cancelText="Batal"
+				isLoading={removeParticipant.isPending}
+				isDangerous={true}
+			/>
+			
 			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 				<div className="mb-6 sm:mb-8">
 					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
 						<button
 							onClick={handleBack}
-							className="text-white hover:text-gray-300 transition-colors"
+							className="text-dark hover:text-gray-300 transition-colors"
 						>
 							<ArrowLeft
 								className="w-5 h-5 sm:w-6 sm:h-6"
@@ -101,15 +137,15 @@ function PesertaContent() {
 						<div className="flex items-center gap-2 sm:gap-3">
 							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
 								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+									className="w-5 h-5 sm:w-6 sm:h-6 text-dark"
 									weight="bold"
 								/>
 							</div>
 							<div>
-								<h1 className="text-2xl sm:text-3xl font-bold text-white">
+								<h1 className="text-2xl sm:text-3xl font-bold text-dark">
 									{classData.name}
 								</h1>
-								<p className="text-sm text-gray-400 mt-1">
+								<p className="text-sm text-gray-800 mt-1">
 									{classData.teacher_name}
 								</p>
 							</div>
@@ -117,66 +153,90 @@ function PesertaContent() {
 					</div>
 				</div>
 				<div>
-					<h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
-						Peserta ({participants.length})
+					<h2 className="text-lg sm:text-xl font-semibold text-dark mb-4">
+						Daftar Semua Peserta ({participants.length})
 					</h2>
-					<div className="space-y-2 sm:space-y-3">
-						{participants.map((participant) => (
-							<div
-								key={participant.id}
-								className="!bg-slate-800 border border-white rounded-xl px-4 sm:px-6 py-3 sm:py-4 transition-all hover:bg-gray-800/50 dark:hover:border-gray-800 flex items-center justify-between"
-							>
-								<div className="flex items-center gap-3">
-									<div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-										<User
-											className="w-5 h-5 text-white"
-											weight="bold"
-										/>
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+						{participants.map((participant, idx) => {
+							const gradient = GRADIENTS[idx % GRADIENTS.length];
+							return (
+								<div
+									key={participant.id}
+									className={`rounded-md shadow-xl hover:shadow-2xl bg-gradient-to-br ${gradient} px-3 py-2 flex items-center gap-4 transition-all hover:scale-[1.02]`}
+								>
+									<div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center shadow-md bg-white">
+										{participant.profile_picture ? (
+											<>
+												{/* eslint-disable-next-line @next/next/no-img-element */}
+												<img
+													src={participant.profile_picture}
+													alt="Foto Profil"
+													className="w-full h-full object-cover"
+													width={56}
+													height={56}
+													onError={(e) => {
+														const target = e.target as HTMLImageElement;
+														target.style.display = 'none';
+														const parent = target.parentElement;
+														if (parent && !parent.querySelector('.fallback-icon')) {
+															const iconWrapper = document.createElement('div');
+															iconWrapper.className = 'fallback-icon flex items-center justify-center w-full h-full';
+															iconWrapper.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 256 256" class="text-gray-600"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>`;
+															parent.appendChild(iconWrapper);
+														}
+													}}
+												/>
+											</>
+										) : (
+											<User
+												className="w-7 h-7 text-gray-600"
+												weight="bold"
+											/>
+										)}
 									</div>
-									<div>
-										<p className="text-sm sm:text-base !text-white font-medium">
+									<div className="flex-1 min-w-0">
+										<p className="text-base font-semibold text-white truncate drop-shadow">
 											{participant.fullname}
 										</p>
-										<p className="text-xs text-gray-400">
+										<p className="text-xs text-white/80 truncate">
 											{participant.email}
 										</p>
 									</div>
+									{isTeacher &&
+										participant.user_id !== classData.teacher_id && (
+											<button
+												onClick={() =>
+													handleOpenRemoveModal(
+														participant.user_id,
+														participant.fullname
+													)
+												}
+												className="text-red-100 hover:text-white transition-colors p-2 rounded-md hover:bg-red-400/20 shadow-md"
+												title="Hapus peserta"
+											>
+												<Trash
+													className="w-5 h-5"
+													weight="bold"
+												/>
+											</button>
+										)}
 								</div>
-								{isTeacher &&
-									participant.user_id !==
-										classData.teacher_id && (
-										<button
-											onClick={() =>
-												handleRemoveParticipant(
-													participant.user_id,
-													participant.fullname
-												)
-											}
-											className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"
-											title="Hapus peserta"
-										>
-											<Trash
-												className="w-5 h-5"
-												weight="bold"
-											/>
-										</button>
-									)}
-							</div>
-						))}
+							);
+						})}
 					</div>
 					{participants.length === 0 && (
 						<div className="text-center py-12 sm:py-20">
-							<div className="max-w-md mx-auto">
-								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center">
+							<div className="max-w-md mx-auto bg-white rounded-md shadow-xl p-8 border-2 border-gray-100">
+								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-md bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-md">
 									<Books
 										className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400"
 										weight="bold"
 									/>
 								</div>
-								<h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+								<h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">
 									Belum Ada Peserta
 								</h3>
-								<p className="text-sm sm:text-base text-gray-400">
+								<p className="text-sm sm:text-base text-gray-600">
 									Undang peserta untuk bergabung ke kelas ini
 								</p>
 							</div>
@@ -184,7 +244,6 @@ function PesertaContent() {
 					)}
 				</div>
 			</main>
-			<Footer />
 		</div>
 	);
 }

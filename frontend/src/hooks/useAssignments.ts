@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	assignmentService,
+} from "@/services";
+import {
 	CreateAssignmentRequest,
 	UpdateAssignmentRequest,
 	SubmitAnswerRequest,
-} from "@/services";
+} from "@/types";
 import toast from "react-hot-toast";
 
-// Query keys
 export const assignmentKeys = {
 	all: ["assignments"] as const,
 	byClass: (classId: number) => ["assignments", "class", classId] as const,
@@ -16,7 +17,6 @@ export const assignmentKeys = {
 	mySubmission: (id: number) => ["assignments", id, "my-submission"] as const,
 };
 
-// Get assignments for a class
 export function useClassAssignments(classId: number) {
 	return useQuery({
 		queryKey: assignmentKeys.byClass(classId),
@@ -25,7 +25,6 @@ export function useClassAssignments(classId: number) {
 	});
 }
 
-// Get assignment details
 export function useAssignmentDetail(assignmentId: number) {
 	return useQuery({
 		queryKey: assignmentKeys.detail(assignmentId),
@@ -34,7 +33,6 @@ export function useAssignmentDetail(assignmentId: number) {
 	});
 }
 
-// Get assignment submissions (for teachers)
 export function useAssignmentSubmissions(assignmentId: number) {
 	return useQuery({
 		queryKey: assignmentKeys.submissions(assignmentId),
@@ -43,7 +41,6 @@ export function useAssignmentSubmissions(assignmentId: number) {
 	});
 }
 
-// Get my submission
 export function useMySubmission(assignmentId: number) {
 	return useQuery({
 		queryKey: assignmentKeys.mySubmission(assignmentId),
@@ -52,7 +49,6 @@ export function useMySubmission(assignmentId: number) {
 	});
 }
 
-// Create assignment
 export function useCreateAssignment() {
 	const queryClient = useQueryClient();
 
@@ -71,7 +67,6 @@ export function useCreateAssignment() {
 	});
 }
 
-// Update assignment
 export function useUpdateAssignment() {
 	const queryClient = useQueryClient();
 
@@ -115,7 +110,6 @@ export function useDeleteAssignment() {
 	});
 }
 
-// Submit typed answer
 export function useSubmitTypedAnswer() {
 	const queryClient = useQueryClient();
 
@@ -142,7 +136,6 @@ export function useSubmitTypedAnswer() {
 	});
 }
 
-// Submit OCR answer
 export function useSubmitOCRAnswer() {
 	const queryClient = useQueryClient();
 
@@ -169,7 +162,6 @@ export function useSubmitOCRAnswer() {
 	});
 }
 
-// Cancel submission (allows resubmission)
 export function useCancelSubmission() {
 	const queryClient = useQueryClient();
 

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
@@ -13,7 +12,7 @@ import {
 	useUpdateAssignment,
 	useAssignmentDetail,
 } from "@/hooks/useAssignments";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import {
 	ArrowLeft,
 	Books,
@@ -58,6 +57,7 @@ function NewAssignmentContent() {
 	const [deadlineTime, setDeadlineTime] = useState("");
 	const [maxScore, setMaxScore] = useState("");
 	const [minimalScore, setMinimalScore] = useState("75");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const createAssignment = useCreateAssignment();
 	const updateAssignment = useUpdateAssignment();
@@ -108,12 +108,12 @@ function NewAssignmentContent() {
 					loadedQuestions.length > 0
 						? loadedQuestions
 						: [
-								{
-									question_text: "",
-									reference_answer: "",
-									points: 10,
-								},
-						  ]
+							{
+								question_text: "",
+								reference_answer: "",
+								points: 10,
+							},
+						]
 				);
 			}
 
@@ -167,6 +167,9 @@ function NewAssignmentContent() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (isSubmitting) {
+			return;
+		}
 
 		if (!title.trim()) {
 			toast.error("Judul tugas harus diisi");
@@ -203,6 +206,8 @@ function NewAssignmentContent() {
 			question_order: index + 1,
 		}));
 
+		setIsSubmitting(true);
+
 		try {
 			if (isEditMode && assignmentId) {
 				await updateAssignment.mutateAsync({
@@ -216,7 +221,14 @@ function NewAssignmentContent() {
 						minimal_score: parseInt(minimalScore) || 75,
 					},
 				});
-				toast.success("Tugas berhasil diperbarui!");
+				toast.dismiss();
+				toast.success("Tugas berhasil diperbarui!", {
+					id: 'assignment-success',
+					duration: 2000,
+				});
+				setTimeout(() => {
+					router.push(`/kelas/${classId}`);
+				}, 1500);
 			} else {
 				await createAssignment.mutateAsync({
 					kelas_id: classId,
@@ -227,10 +239,18 @@ function NewAssignmentContent() {
 					max_score: parseInt(maxScore) || undefined,
 					minimal_score: parseInt(minimalScore) || 75,
 				});
-				toast.success("Tugas berhasil dibuat!");
+				toast.dismiss();
+				toast.success("Tugas berhasil dibuat!", {
+					id: 'assignment-success',
+					duration: 2000,
+				});
+				setTimeout(() => {
+					router.push(`/kelas/${classId}`);
+				}, 1000);
 			}
-			router.push(`/kelas/${classId}`);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
+			setIsSubmitting(false);
 			console.error("Error saving assignment:", error);
 
 			if (
@@ -251,14 +271,14 @@ function NewAssignmentContent() {
 
 	if (user && user.user_role !== "dosen") {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-gray-50">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
-					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+					<div className="text-center bg-white rounded-md shadow-xl p-8 max-w-md">
+						<h2 className="text-xl font-bold text-gray-800 mb-2">
 							Akses Ditolak
 						</h2>
-						<p className="text-gray-400 mb-4">
+						<p className="text-gray-600 mb-4">
 							Hanya dosen yang dapat membuat atau mengedit tugas
 						</p>
 						<Button
@@ -268,59 +288,51 @@ function NewAssignmentContent() {
 						</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
-	}
-
-	if (isEditMode && isLoadingAssignment) {
+	} if (isEditMode && isLoadingAssignment) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-gray-50">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
 					<LoadingSpinner size="lg" text="Memuat data tugas..." />
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-gray-50">
 			<Navbar />
+			<Toaster position="top-center" />
+			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				<div className="mb-8">
+					<button
+						onClick={handleBack}
+						className="group inline-flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition-all duration-200 mb-6"
+					>
+						<div className="p-2 rounded-md bg-white shadow-sm group-hover:shadow-md group-hover:bg-blue-50 transition-all duration-200">
+							<ArrowLeft className="w-5 h-5" weight="bold" />
+						</div>
+						<span className="font-medium">Kembali</span>
+					</button>
 
-			<main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				{/* Header */}
-				<div className="mb-6 sm:mb-8">
-					<div className="flex items-center gap-3 sm:gap-4 mb-6">
-						<button
-							onClick={handleBack}
-							className="text-white hover:text-gray-300 transition-colors"
-						>
-							<ArrowLeft
-								className="w-5 h-5 sm:w-6 sm:h-6"
-								weight="bold"
-							/>
-						</button>
+					<div className="bg-yellow-600 rounded-md shadow-xl p-8 mb-6">
 						<div className="flex items-center gap-3">
-							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
-								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-white"
-									weight="bold"
-								/>
+							<div className="w-14 h-14 rounded-md bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+								<Books className="w-7 h-7 text-white" weight="bold" />
 							</div>
-							<h1 className="text-2xl sm:text-3xl font-bold text-white">
-								{isEditMode ? "Edit Tugas" : "Buat Tugas Baru"}
-							</h1>
+							<div>
+								<h1 className="text-3xl sm:text-4xl font-bold text-white">
+									{isEditMode ? "Edit Tugas" : "Buat Tugas Baru"}
+								</h1>
+							</div>
 						</div>
 					</div>
 				</div>
-
-				{/* Form */}
 				<form onSubmit={handleSubmit} className="space-y-6">
-					{/* Judul Tugas */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yellow-500 text-base sm:text-lg font-semibold mb-3">
 							Judul Tugas
 						</label>
 						<input
@@ -328,14 +340,12 @@ function NewAssignmentContent() {
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
 							placeholder="Masukkan judul tugas"
-							className="w-full px-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors"
+							className="w-full px-4 py-3 bg-gray-50 rounded-md border-2 border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors shadow-lg"
 							required
 						/>
 					</div>
-
-					{/* Deskripsi */}
 					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+						<label className="block text-yell text-base sm:text-lg font-semibold mb-3">
 							Deskripsi (Opsional)
 						</label>
 						<textarea
@@ -343,29 +353,37 @@ function NewAssignmentContent() {
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="Masukkan deskripsi tugas"
 							rows={4}
-							className="w-full px-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors resize-none"
+							className="w-full px-4 py-3 bg-gray-50 rounded-md border-2 border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors shadow-lg"
 						/>
 					</div>
-
-					{/* Soal dan Kunci Jawaban */}
 					<div>
-						<h2 className="text-white text-base sm:text-lg font-semibold mb-4">
-							Soal dan Kunci Jawaban
-						</h2>
-						<div className="bg-[#1e1f22] border border-gray-700 rounded-xl p-4 sm:p-6">
+						<div className="flex items-center gap-3 mb-6">
+							<div className="p-3 rounded-md bg-yellow-500 shadow-lg">
+								<Books className="w-6 h-6 text-white" weight="bold" />
+							</div>
+							<h2 className="text-2xl font-bold text-gray-800">
+								Soal dan Kunci Jawaban
+							</h2>
+						</div>
+						<div className="bg-white rounded-md shadow-lg border border-gray-100 p-4 sm:p-6">
 							{questions.map((question, index) => (
 								<div key={index} className="mb-6 last:mb-0">
 									<div className="flex items-center justify-between mb-3">
-										<h3 className="text-white font-semibold">
-											Soal {index + 1}
-										</h3>
+										<div className="flex items-center gap-3">
+											<div className="w-10 h-10 rounded-md bg-yellow-400 flex items-center justify-center text-white font-bold shadow-md">
+												{index + 1}
+											</div>
+											<h3 className="text-lg font-bold text-gray-800">
+												Soal {index + 1}
+											</h3>
+										</div>
 										{questions.length > 1 && (
 											<button
 												type="button"
 												onClick={() =>
 													handleRemoveQuestion(index)
 												}
-												className="text-red-400 hover:text-red-300 transition-colors p-1"
+												className="bg-red-500 hover:bg-red-600 text-white transition-colors p-2 rounded-md shadow-md"
 												title="Hapus soal"
 											>
 												<Trash
@@ -375,55 +393,53 @@ function NewAssignmentContent() {
 											</button>
 										)}
 									</div>
-
 									<div className="space-y-4">
-										{/* Question Text */}
 										<div>
-											<label className="block text-sm text-gray-400 mb-2">
+											<label className="block text-base font-bold text-gray-800 mb-3">
 												Pertanyaan
 											</label>
-											<textarea
-												value={question.question_text}
-												onChange={(e) =>
-													handleQuestionChange(
-														index,
-														"question_text",
-														e.target.value
-													)
-												}
-												placeholder="Masukkan pertanyaan"
-												rows={3}
-												className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-colors resize-none"
-												required
-											/>
+											<div className="bg-blue-50 rounded-md p-4">
+												<textarea
+													value={question.question_text}
+													onChange={(e) =>
+														handleQuestionChange(
+															index,
+															"question_text",
+															e.target.value
+														)
+													}
+													placeholder="Masukkan pertanyaan"
+													rows={3}
+													className="w-full bg-white px-4 py-3 border-2 border-gray-200 rounded-md text-gray-800 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+													required
+												/>
+											</div>
 										</div>
-
-										{/* Reference Answer */}
 										<div>
-											<label className="block text-sm text-gray-400 mb-2">
+											<label className="block text-base font-bold text-gray-800 mb-3">
 												Kunci Jawaban
 											</label>
-											<textarea
-												value={
-													question.reference_answer
-												}
-												onChange={(e) =>
-													handleQuestionChange(
-														index,
-														"reference_answer",
-														e.target.value
-													)
-												}
-												placeholder="Masukkan kunci jawaban"
-												rows={4}
-												className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-colors resize-none"
-												required
-											/>
+											<div className="bg-green-50 rounded-md p-4">
+												<textarea
+													value={
+														question.reference_answer
+													}
+													onChange={(e) =>
+														handleQuestionChange(
+															index,
+															"reference_answer",
+															e.target.value
+														)
+													}
+													placeholder="Masukkan kunci jawaban"
+													rows={4}
+													className="w-full bg-white px-4 py-3 border-2 border-gray-200 rounded-md text-gray-800 placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors resize-none"
+													required
+												/>
+											</div>
 										</div>
-
-										{/* Points */}
 										<div>
-											<label className="block text-sm text-gray-400 mb-2">
+											<label className="block text-base font-bold text-gray-800 mb-3">
 												Poin
 											</label>
 											<input
@@ -435,47 +451,41 @@ function NewAssignmentContent() {
 														"points",
 														parseInt(
 															e.target.value
-														) || 0
-													)
+														) || " "
+													) 
 												}
-												min="1"
+												onWheel={(e) => e.currentTarget.blur()}
+												min="0"
 												max="1000"
-												className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gray-500 transition-colors"
+												className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-md text-gray-800 focus:outline-none focus:border-yellow-500 transition-colors shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 												required
 											/>
 										</div>
 									</div>
-
-									{/* Divider */}
 									{index < questions.length - 1 && (
-										<div className="border-t border-gray-700 mt-6"></div>
+										<div className="border-t-2 border-gray-100 mt-6"></div>
 									)}
 								</div>
 							))}
-
-							{/* Add Question Button */}
-							<div className="mt-6 pt-6 border-t border-gray-700">
+							<div className="mt-6 pt-6 border-t-2 border-gray-100">
 								<button
 									type="button"
 									onClick={handleAddQuestion}
-									className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+									className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black rounded-md font-bold transition-colors flex items-center justify-center gap-2 shadow-lg"
 								>
 									<Plus className="w-5 h-5" weight="bold" />
 									Tambah Soal
 								</button>
 							</div>
 						</div>
-						<p className="text-sm text-gray-400 mt-2">
+						<p className="text-sm text-gray-600 mt-3">
 							Setiap soal akan dinilai secara otomatis berdasarkan
 							kunci jawaban yang Anda berikan.
 						</p>
 					</div>
 
-					{/* Deadline */}
-					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
-							Deadline (Opsional)
-						</label>
+					<div className="bg-white rounded-md shadow-lg border border-gray-100 p-6">
+						<h3 className="text-lg font-bold text-gray-800 mb-4">Deadline (Opsional)</h3>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div className="relative">
 								<CalendarBlank
@@ -488,7 +498,7 @@ function NewAssignmentContent() {
 									onChange={(e) =>
 										setDeadline(e.target.value)
 									}
-									className="w-full pl-10 pr-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white focus:outline-none focus:border-gray-500 transition-colors"
+									className="w-full pl-10 pr-4 py-3 bg-white border-2 border-gray-200 rounded-md text-gray-800 focus:outline-none focus:border-blue-500 transition-colors shadow-sm"
 								/>
 							</div>
 							<div className="relative">
@@ -502,36 +512,32 @@ function NewAssignmentContent() {
 									onChange={(e) =>
 										setDeadlineTime(e.target.value)
 									}
-									className="w-full pl-10 pr-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white focus:outline-none focus:border-gray-500 transition-colors"
+									className="w-full pl-10 pr-4 py-3 bg-white border-2 border-gray-200 rounded-md text-gray-800 focus:outline-none focus:border-blue-500 transition-colors shadow-sm"
 								/>
 							</div>
 						</div>
 					</div>
-
-					{/* Max Score - Auto calculated */}
-					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+					<div className="bg-white rounded-md shadow-lg border border-gray-100 p-6">
+						<label className="block text-gray-800 text-lg font-bold mb-4">
 							Skor Maksimal
 						</label>
-						<div className="w-full px-4 py-3 bg-[#2b2d31] border border-gray-600 rounded-xl text-white">
+						<div className="bg-yellow-50 rounded-md p-6 border-2 border-yellow-200">
 							<div className="flex items-center justify-between">
-								<span className="text-gray-400">
+								<span className="text-gray-700 font-semibold">
 									Total Poin dari Semua Soal:
 								</span>
-								<span className="text-2xl font-bold text-yellow-400">
+								<span className="text-3xl font-bold text-yellow-600">
 									{maxScore || 0}
 								</span>
 							</div>
 						</div>
-						<p className="text-sm text-gray-400 mt-2">
+						<p className="text-sm text-gray-600 mt-3">
 							Skor maksimal dihitung otomatis dari jumlah poin
 							semua soal.
 						</p>
 					</div>
-
-					{/* Minimal Score for Passing */}
-					<div>
-						<label className="block text-white text-base sm:text-lg font-semibold mb-3">
+					<div className="bg-white rounded-md shadow-lg border border-gray-100 p-6">
+						<label className="block text-gray-800 text-lg font-bold mb-4">
 							Nilai Minimal Kelulusan
 						</label>
 						<input
@@ -541,48 +547,42 @@ function NewAssignmentContent() {
 							min="0"
 							max={maxScore || "100"}
 							placeholder="75"
-							className="w-full px-4 py-3 bg-[#1e1f22] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors"
+							className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-md text-gray-800 placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors shadow-sm"
 							required
 						/>
-						<p className="text-sm text-gray-400 mt-2">
+						<p className="text-sm text-gray-600 mt-3">
 							Mahasiswa yang mendapat nilai di atas atau sama
 							dengan nilai minimal ini akan dinyatakan lulus.
 						</p>
 					</div>
-
-					{/* Submit Button */}
 					<div className="flex justify-center gap-4 pt-4">
-						<Button
+						<button
 							type="button"
 							onClick={handleBack}
-							variant="outline"
-							size="lg"
-							className="min-w-[150px]"
+							className="min-w-[150px] px-6 py-3 bg-white hover:bg-gray-100 border-2 border-gray-300 text-gray-700 rounded-md font-bold shadow-lg hover:shadow-xl transition-all"
 						>
 							Batal
-						</Button>
-						<Button
+						</button>
+						<button
 							type="submit"
-							variant="primary"
-							size="lg"
-							className="min-w-[150px]"
 							disabled={
+								isSubmitting ||
 								createAssignment.isPending ||
 								updateAssignment.isPending
 							}
+							className="min-w-[150px] px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 rounded-md font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{createAssignment.isPending ||
-							updateAssignment.isPending
+							{isSubmitting ||
+								createAssignment.isPending ||
+								updateAssignment.isPending
 								? "Menyimpan..."
 								: isEditMode
-								? "Perbarui Tugas"
-								: "Buat Tugas"}
-						</Button>
+									? "Perbarui Tugas"
+									: "Buat Tugas"}
+						</button>
 					</div>
 				</form>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }

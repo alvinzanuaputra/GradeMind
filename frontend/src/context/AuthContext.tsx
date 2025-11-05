@@ -9,11 +9,14 @@ import React, {
 } from "react";
 import { User, AuthState } from "@/types";
 import { setCookie, getCookie, deleteCookie } from "@/lib/cookies";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import Navbar from "@/components/Navbar";
 
 interface AuthContextType extends AuthState {
 	login: (user: User, token: string, rememberMe?: boolean) => void;
 	logout: () => void;
 	updateUser: (user: User) => void;
+	isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		isLoading: true,
 		loginTimestamp: undefined,
 	});
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 	useEffect(() => {
 		const loadUser = () => {
@@ -89,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const login = (user: User, token: string, rememberMe?: boolean) => {
 		const loginTimestamp = new Date().toISOString();
-		const expiryHours = rememberMe ? 24 * 7 : 1 / 24; // 7 days if remember me, else 1 hour
+		const expiryHours = rememberMe ? 24 * 7 : 1 / 24;
 
 		setCookie("user", JSON.stringify(user), { expires: expiryHours });
 		setCookie("token", token, { expires: expiryHours });
@@ -108,6 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	};
 
 	const logout = () => {
+		setIsLoggingOut(true);
+		
 		deleteCookie("user");
 		deleteCookie("token");
 		deleteCookie("loginTimestamp");
@@ -142,10 +148,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		login,
 		logout,
 		updateUser,
+		isLoggingOut,
 	};
+	
+	// Show loading screen when checking auth state or logging out
+	if (authState.isLoading || isLoggingOut) {
+		return (
+			<AuthContext.Provider value={value}>
+				<div className="min-h-screen flex flex-col bg-gray-50">
+					<Navbar />
+					<div className="flex-1 flex items-center justify-center">
+						<LoadingSpinner 
+							size="lg" 
+							text={isLoggingOut ? "Keluar dari sistem..." : "Memuat..."} 
+						/>
+					</div>
+				</div>
+			</AuthContext.Provider>
+		);
+	}
 
 	return (
-		<AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+		<AuthContext.Provider value={value}>
+			{children}
+		</AuthContext.Provider>
 	);
 }
 

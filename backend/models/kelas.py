@@ -17,4 +17,3 @@ class Kelas(Base):
     teacher = relationship("User", back_populates="created_classes", foreign_keys=[teacher_id])
     participants = relationship("ClassParticipant", back_populates="kelas", cascade="all, delete-orphan")
     assignments = relationship("Assignment", back_populates="kelas", cascade="all, delete-orphan")
-

@@ -1,16 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
 import { gradingService, assignmentService } from "@/services";
-import { ArrowLeft, Books, CheckCircle, XCircle } from "phosphor-react";
+import { ArrowLeft, Books, CheckCircle, XCircle, Copy, Check } from "phosphor-react";
 import type { SubmissionDetailResponse } from "@/types";
+import { toast, Toaster } from "react-hot-toast";
 
 export default function DetailPenilaianPage() {
 	return (
@@ -30,12 +31,13 @@ function DetailPenilaianContent() {
 	const submissionId = parseInt(
 		Array.isArray(submissionIdParam)
 			? submissionIdParam[submissionIdParam.length - 1]
-			: submissionIdParam || "0"
+			: submissionIdParam || "Tidak Dinilai"
 	);
 
 	const isTeacher = user?.user_role === "dosen";
+	const [copiedQuestions, setCopiedQuestions] = useState<Set<number>>(new Set());
+	const [copiedAnswers, setCopiedAnswers] = useState<Set<number>>(new Set());
 
-	// For teachers: fetch detailed submission data
 	const {
 		data: teacherSubmissionData,
 		isLoading: isLoadingTeacher,
@@ -46,7 +48,6 @@ function DetailPenilaianContent() {
 		enabled: isTeacher,
 	});
 
-	// For students: fetch their own submission data
 	const {
 		data: studentSubmissionData,
 		isLoading: isLoadingStudent,
@@ -64,16 +65,42 @@ function DetailPenilaianContent() {
 		router.back();
 	};
 
-	// Transform student data to match teacher data format
+	const handleCopyText = async (text: string, label: string, questionId: number, isAnswer: boolean = false) => {
+		try {
+			await navigator.clipboard.writeText(text);
+			if (isAnswer) {
+				setCopiedAnswers(prev => new Set(prev).add(questionId));
+				setTimeout(() => {
+					setCopiedAnswers(prev => {
+						const newSet = new Set(prev);
+						newSet.delete(questionId);
+						return newSet;
+					});
+				}, 2000);
+			} else {
+				setCopiedQuestions(prev => new Set(prev).add(questionId));
+				setTimeout(() => {
+					setCopiedQuestions(prev => {
+						const newSet = new Set(prev);
+						newSet.delete(questionId);
+						return newSet;
+					});
+				}, 2000);
+			}
+		} catch (err) {
+			toast.error("Gagal menyalin teks");
+		}
+	};
+
 	const gradeDetail = isTeacher
 		? teacherSubmissionData
 		: studentSubmissionData?.submitted && studentSubmissionData?.graded
-		? {
+			? {
 				submission_id: studentSubmissionData.submission_id!,
 				student_id: user?.id || 0,
 				student_name: user?.fullname || "Student",
 				assignment_id: assignmentId,
-				assignment_title: "Assignment", // This isn't provided by my-submission endpoint
+				assignment_title: "Assignment",
 				submission_type: studentSubmissionData.submission_type!,
 				submitted_at: studentSubmissionData.submitted_at!,
 				graded: true,
@@ -91,7 +118,7 @@ function DetailPenilaianContent() {
 					studentSubmissionData.answers?.map((ans) => ({
 						question_id: ans.question_id,
 						question_text: ans.question_text,
-						question_points: 0, // Not provided by my-submission endpoint
+						question_points: 0,
 						answer_text: ans.answer_text,
 						final_score: ans.final_score,
 						feedback: ans.feedback,
@@ -102,66 +129,83 @@ function DetailPenilaianContent() {
 						rubric_rata_rata: ans.rubric_rata_rata,
 						embedding_similarity: ans.embedding_similarity,
 					})) || [],
-		  }
-		: null;
+			}
+			: null;
 
-	// Security check for students: verify they're viewing their own submission
 	if (!isTeacher && gradeDetail && gradeDetail.student_id !== user?.id) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-gray-50">
 				<Navbar />
-				<div className="flex-1 flex items-center justify-center">
-					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+				<div className="flex-1 flex items-center justify-center p-4">
+					<div className="text-center bg-white rounded-md shadow-xl p-8 max-w-md">
+						<div className="w-20 h-20 rounded-md bg-red-100 border-2 border-red-300 flex items-center justify-center mx-auto mb-6">
+							<Books className="w-10 h-10 text-red-600" weight="bold" />
+						</div>
+						<h2 className="text-2xl font-bold text-gray-800 mb-3">
 							Akses Ditolak
 						</h2>
-						<p className="text-gray-400 mb-4">
-							Anda tidak memiliki akses untuk melihat penilaian
-							ini.
+						<p className="text-gray-600 mb-6">
+							Anda tidak memiliki akses untuk melihat penilaian ini
 						</p>
-						<Button onClick={handleBack}>Kembali</Button>
+						<Button
+							onClick={handleBack}
+							className="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-3 rounded-md font-bold shadow-lg"
+						>
+							<ArrowLeft className="w-5 h-5 inline mr-2" weight="bold" />
+							Kembali
+						</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-gray-100">
 				<Navbar />
 				<div className="flex-1 flex items-center justify-center">
-					<LoadingSpinner
-						size="lg"
-						text="Memuat detail penilaian..."
-					/>
+					<div className="text-center">
+						<div className="relative inline-block mb-6">
+							<div className="w-20 h-20 rounded-md bg-yellow-400 flex items-center justify-center shadow-xl animate-pulse">
+								<Books className="w-10 h-10 text-black" weight="bold" />
+							</div>
+						</div>
+						<LoadingSpinner size="lg" text="Memuat detail penilaian..." />
+					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
 
 	if (error || !gradeDetail || !gradeDetail.graded) {
 		return (
-			<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+			<div className="min-h-screen flex flex-col bg-gray-100">
 				<Navbar />
-				<div className="flex-1 flex items-center justify-center">
-					<div className="text-center">
-						<h2 className="text-xl font-semibold text-white mb-2">
+				<div className="flex-1 flex items-center justify-center p-4">
+					<div className="text-center bg-white rounded-md shadow-xl p-8 max-w-md">
+						<div className="w-20 h-20 rounded-md bg-red-100 border-2 border-red-300 flex items-center justify-center mx-auto mb-6">
+							<Books className="w-10 h-10 text-red-600" weight="bold" />
+						</div>
+						<h2 className="text-2xl font-bold text-gray-800 mb-3">
 							{!gradeDetail
 								? "Detail penilaian tidak ditemukan"
 								: "Tugas belum dinilai"}
 						</h2>
-						<p className="text-gray-400 mb-4">
+						<p className="text-gray-600 mb-6">
 							{!gradeDetail
 								? "Mungkin data belum tersedia atau telah dihapus."
 								: "Tugas ini belum dinilai oleh sistem."}
 						</p>
-						<Button onClick={handleBack}>Kembali</Button>
+						<Button
+							onClick={handleBack}
+							className="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-3 rounded-md font-bold shadow-lg"
+						>
+							<ArrowLeft className="w-5 h-5 inline mr-2" weight="bold" />
+							Kembali
+						</Button>
 					</div>
 				</div>
-				<Footer />
 			</div>
 		);
 	}
@@ -169,34 +213,33 @@ function DetailPenilaianContent() {
 	const isPassed = gradeDetail.percentage && gradeDetail.percentage >= 75;
 
 	return (
-		<div className="min-h-screen flex flex-col bg-[#2b2d31]">
+		<div className="min-h-screen flex flex-col bg-gray-50">
 			<Navbar />
+			<Toaster position="top-center" />
 
-			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-				{/* Header */}
-				<div className="mb-6 sm:mb-8">
-					<div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+			<main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				<div className="mb-8">
+					<div className="flex items-center justify-between mb-6">
 						<button
 							onClick={handleBack}
-							className="text-white hover:text-gray-300 transition-colors"
+							className="group inline-flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition-all duration-200"
 						>
-							<ArrowLeft
-								className="w-5 h-5 sm:w-6 sm:h-6"
-								weight="bold"
-							/>
-						</button>
-						<div className="flex items-center gap-2 sm:gap-3 flex-1">
-							<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
-								<Books
-									className="w-5 h-5 sm:w-6 sm:h-6 text-white"
-									weight="bold"
-								/>
+							<div className="p-2 rounded-md bg-white shadow-sm group-hover:shadow-md group-hover:bg-blue-50 transition-all duration-200">
+								<ArrowLeft className="w-5 h-5" weight="bold" />
 							</div>
-							<div className="flex-1">
-								<h1 className="text-2xl sm:text-3xl font-bold text-white">
+							<span className="font-medium">Kembali</span>
+						</button>
+					</div>
+					<div className="bg-yellow-600 rounded-md shadow-xl p-8 mb-6">
+						<div className="flex items-center gap-3">
+							<div className="w-14 h-14 rounded-md bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+								<Books className="w-7 h-7 text-white" weight="bold" />
+							</div>
+							<div>
+								<h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
 									Detail Penilaian
 								</h1>
-								<p className="text-sm text-gray-400 mt-1">
+								<p className="text-blue-100 text-sm font-medium">
 									{gradeDetail.student_name}
 									{gradeDetail.assignment_title &&
 										` - ${gradeDetail.assignment_title}`}
@@ -205,15 +248,12 @@ function DetailPenilaianContent() {
 						</div>
 					</div>
 				</div>
-
-				{/* Score Summary Card */}
-				<div className="mb-6 sm:mb-8">
+				<div className="mb-6">
 					<div
-						className={`rounded-xl p-6 ${
-							isPassed
-								? "bg-gradient-to-br from-green-600 to-green-700"
-								: "bg-gradient-to-br from-red-600 to-red-700"
-						}`}
+						className={`rounded-md shadow-xl p-6 ${isPassed
+							? "bg-gradient-to-br from-green-600 to-green-700"
+							: "bg-gradient-to-br from-red-600 to-red-700"
+							}`}
 					>
 						<div className="flex items-center justify-between mb-4">
 							<div className="flex items-center gap-3">
@@ -234,239 +274,415 @@ function DetailPenilaianContent() {
 											0}{" "}
 										/ {gradeDetail.max_score || 0}
 									</h3>
-									<p className="text-white/80 text-sm">
+									<p className="text-white text-sm">
 										{isPassed ? "Lulus" : "Tidak Lulus"} (
 										{gradeDetail.percentage?.toFixed(1) ||
-											0}
+											" "}
 										%)
 									</p>
 								</div>
 							</div>
 							<div className="text-right">
-								<p className="text-white/80 text-xs sm:text-sm">
+								<p className="text-white text-xs sm:text-sm">
 									Dinilai pada
 								</p>
 								<p className="text-white text-sm sm:text-base font-medium">
 									{gradeDetail.graded_at
 										? new Date(
-												gradeDetail.graded_at
-										  ).toLocaleDateString("id-ID", {
-												day: "numeric",
-												month: "long",
-												year: "numeric",
-										  })
-										: "N/A"}
+											gradeDetail.graded_at
+										).toLocaleDateString("id-ID", {
+											day: "numeric",
+											month: "long",
+											year: "numeric",
+										})
+										: "Tidak Dinilai"}
 								</p>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				{/* Rubric Scores */}
 				{gradeDetail.avg_pemahaman && (
-					<div className="mb-6 sm:mb-8">
-						<h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
-							Skor Rubrik
-						</h2>
-						<div className="bg-[#1e1f22] border border-gray-700 rounded-xl p-4 sm:p-6">
-							<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-								<div className="text-center">
-									<p className="text-gray-400 text-xs sm:text-sm mb-2">
+					<div className="mb-6">
+						<div className="flex items-center gap-2 mb-4">
+							<div className="w-8 h-8 rounded-md bg-yellow-400 flex items-center justify-center shadow-md">
+								<span className="text-yellow-900 font-bold text-sm">📊</span>
+							</div>
+							<h2 className="text-xl font-bold text-gray-800">
+								Skor Rubrik
+							</h2>
+						</div>
+						<div className="bg-white rounded-md shadow-lg p-6 border border-gray-100">
+							<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-md p-4 border border-blue-200 shadow-md">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Pemahaman
 									</p>
-									<p className="text-white text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_pemahaman.toFixed(1)}
-									</p>
+									{gradeDetail.avg_pemahaman > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_pemahaman.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-								<div className="text-center">
-									<p className="text-gray-400 text-xs sm:text-sm mb-2">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-md p-4 border border-blue-200 shadow-md">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Kelengkapan
 									</p>
-									<p className="text-white text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_kelengkapan?.toFixed(
-											1
-										) || "-"}
-									</p>
+									{gradeDetail.avg_kelengkapan && gradeDetail.avg_kelengkapan > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_kelengkapan.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-								<div className="text-center">
-									<p className="text-gray-400 text-xs sm:text-sm mb-2">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-md p-4 border border-blue-200 shadow-md">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Kejelasan
 									</p>
-									<p className="text-white text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_kejelasan?.toFixed(
-											1
-										) || "-"}
-									</p>
+									{gradeDetail.avg_kejelasan && gradeDetail.avg_kejelasan > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_kejelasan.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-								<div className="text-center">
-									<p className="text-gray-400 text-xs sm:text-sm mb-2">
+								<div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-md p-4 border border-blue-200 shadow-md">
+									<p className="text-blue-700 text-xs sm:text-sm mb-2 font-medium">
 										Analisis
 									</p>
-									<p className="text-white text-xl sm:text-2xl font-bold">
-										{gradeDetail.avg_analisis?.toFixed(1) ||
-											"-"}
-									</p>
+									{gradeDetail.avg_analisis && gradeDetail.avg_analisis > 0 ? (
+										<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+											{gradeDetail.avg_analisis.toFixed(1)}
+										</p>
+									) : (
+										<div>
+											<p className="text-blue-900 text-xl sm:text-2xl font-bold">
+												0.0
+											</p>
+											<p className="text-blue-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
 							</div>
-							{gradeDetail.avg_embedding_similarity && (
-								<div className="mt-4 pt-4 border-t border-gray-700 text-center">
-									<p className="text-gray-400 text-xs sm:text-sm mb-2">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div className="text-center bg-gradient-to-br from-green-50 to-green-100 rounded-md p-4 border border-green-200 shadow-md">
+									<p className="text-green-700 text-xs sm:text-sm mb-2 font-medium">
 										Similarity Score
 									</p>
-									<p className="text-white text-xl sm:text-2xl font-bold">
-										{(
-											gradeDetail.avg_embedding_similarity *
-											100
-										).toFixed(1)}
-										%
-									</p>
+									{gradeDetail.avg_embedding_similarity && gradeDetail.avg_embedding_similarity > 0 ? (
+										<p className="text-green-900 text-xl sm:text-2xl font-bold">
+											{(gradeDetail.avg_embedding_similarity * 100).toFixed(1)}%
+										</p>
+									) : (
+										<div>
+											<p className="text-green-900 text-xl sm:text-2xl font-bold">
+												0.0%
+											</p>
+											<p className="text-green-600 text-xs mt-1">
+												Tidak dinilai
+											</p>
+										</div>
+									)}
 								</div>
-							)}
+								<div className="text-center bg-gradient-to-br from-red-50 to-red-100 rounded-md p-4 border border-red-200 shadow-md">
+									<p className="text-red-700 text-xs sm:text-sm mb-2 font-medium">
+										Rata-rata
+									</p>
+									{(() => {
+										const questionAverages = gradeDetail.question_details
+											?.map(q => q.rubric_rata_rata || 0)
+											.filter(avg => avg > 0) || [];
+										
+										const overallAverage = questionAverages.length > 0
+											? questionAverages.reduce((sum, val) => sum + val, 0) / questionAverages.length
+											: 0;
+										
+										return overallAverage > 0 ? (
+											<p className="text-red-900 text-xl sm:text-2xl font-bold">
+												{overallAverage.toFixed(1)}
+											</p>
+										) : (
+											<div>Detail Jawaban per Soal
+												<p className="text-red-900 text-xl sm:text-2xl font-bold">
+													0.0
+												</p>
+												<p className="text-red-600 text-xs mt-1">
+													Tidak dinilai
+												</p>
+											</div>
+										);
+									})()}
+								</div>
+							</div>
 						</div>
 					</div>
 				)}
-
-				{/* Question Answers Detail */}
-				<div className="mb-6 sm:mb-8">
-					<h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
-						Detail Jawaban per Soal
-					</h2>
-					<div className="space-y-4">
+				<div className="mb-8">
+					<div className="flex items-center gap-3 mb-6">
+						<div className="p-3 rounded-md bg-yellow-500 shadow-lg">
+							<Books className="w-6 h-6 text-white" weight="bold" />
+						</div>
+						<h2 className="text-2xl font-bold text-gray-800">
+							Detail Jawaban per Soal
+						</h2>
+					</div>
+					<div className="space-y-8">
 						{gradeDetail.question_details?.map((qa, index) => (
 							<div
 								key={qa.question_id}
-								className="bg-[#1e1f22] border border-gray-700 rounded-xl p-4 sm:p-6"
+								className="bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden"
 							>
-								<div className="flex items-start justify-between mb-4">
-									<h3 className="text-lg font-semibold text-white">
-										Soal {index + 1}
-										{qa.question_points > 0 &&
-											` (${qa.question_points} poin)`}
-									</h3>
-									<div className="text-right">
-										<span className="text-2xl font-bold text-white">
-											{qa.final_score?.toFixed(1) || 0}
-										</span>
-										<span className="text-gray-400 text-sm ml-1">
-											{qa.question_points > 0
-												? `/ ${qa.question_points}`
-												: "poin"}
-										</span>
-									</div>
-								</div>
-
-								{/* Question Text */}
-								{qa.question_text && (
-									<div className="mb-4">
-										<h4 className="text-sm font-semibold text-gray-400 mb-2">
-											Soal:
-										</h4>
-										<p className="text-gray-300 leading-relaxed bg-[#2b2d31] p-3 rounded-lg">
-											{qa.question_text}
-										</p>
-									</div>
-								)}
-
-								{/* Answer Text */}
-								<div className="mb-4">
-									<h4 className="text-sm font-semibold text-gray-400 mb-2">
-										Jawaban:
-									</h4>
-									<p className="text-gray-300 leading-relaxed bg-[#2b2d31] p-3 rounded-lg">
-										{qa.answer_text}
-									</p>
-								</div>
-
-								{/* Rubric Scores for this question */}
-								{qa.rubric_pemahaman && (
-									<div className="mb-4">
-										<h4 className="text-sm font-semibold text-gray-400 mb-3">
-											Skor Rubrik:
-										</h4>
-										<div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-											<div className="bg-[#2b2d31] p-3 rounded-lg text-center">
-												<p className="text-xs text-gray-400 mb-1">
-													Pemahaman
-												</p>
-												<p className="text-white font-bold">
-													{qa.rubric_pemahaman.toFixed(
-														1
-													)}
-												</p>
+								<div className="bg-white px-6 py-4 border-b border-gray-200">
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-3">
+											<div className="w-10 h-10 rounded-md bg-yellow-400 flex items-center justify-center text-white font-bold shadow-md">
+												{index + 1}
 											</div>
-											<div className="bg-[#2b2d31] p-3 rounded-lg text-center">
-												<p className="text-xs text-gray-400 mb-1">
-													Kelengkapan
-												</p>
-												<p className="text-white font-bold">
-													{qa.rubric_kelengkapan?.toFixed(
-														1
-													) || "-"}
-												</p>
-											</div>
-											<div className="bg-[#2b2d31] p-3 rounded-lg text-center">
-												<p className="text-xs text-gray-400 mb-1">
-													Kejelasan
-												</p>
-												<p className="text-white font-bold">
-													{qa.rubric_kejelasan?.toFixed(
-														1
-													) || "-"}
-												</p>
-											</div>
-											<div className="bg-[#2b2d31] p-3 rounded-lg text-center">
-												<p className="text-xs text-gray-400 mb-1">
-													Analisis
-												</p>
-												<p className="text-white font-bold">
-													{qa.rubric_analisis?.toFixed(
-														1
-													) || "-"}
+											<div>
+												<h3 className="text-lg font-bold text-gray-800">
+													Soal {index + 1}
+												</h3>
+												<p className="text-sm text-gray-600">
+													Bobot: {qa.question_points > 0 ? qa.question_points : 0} poin
 												</p>
 											</div>
 										</div>
-										{qa.embedding_similarity && (
-											<div className="mt-3 bg-[#2b2d31] p-3 rounded-lg text-center">
-												<p className="text-xs text-gray-400 mb-1">
-													Similarity
-												</p>
-												<p className="text-white font-bold">
-													{(
-														qa.embedding_similarity *
-														100
-													).toFixed(1)}
-													%
+										<div className="text-right">
+											<div className="px-4 py-2 rounded-md bg-yellow-100 border border-yellow-300">
+												<span className="text-2xl font-bold text-gray-900">
+													{qa.final_score?.toFixed(1) || 0}
+												</span>
+												<span className="text-gray-600 text-sm ml-1">
+													/ {qa.question_points > 0 ? qa.question_points : 0}
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div className="p-6">
+									{qa.question_text && (
+										<div className="mb-6">
+											<div className="bg-blue-50 rounded-md p-6 relative">
+												<button
+													onClick={() => handleCopyText(qa.question_text, "Soal", qa.question_id, false)}
+													className={`absolute top-3 right-3 p-2 rounded-md transition-all duration-200 shadow-md hover:shadow-lg ${copiedQuestions.has(qa.question_id)
+															? 'bg-blue-500 text-white'
+															: 'bg-blue-500 text-white hover:bg-gray-400'
+														}`}
+													title={copiedQuestions.has(qa.question_id) ? "Tersalin!" : "Salin soal"}
+												>
+													{copiedQuestions.has(qa.question_id) ? (
+														<Check className="w-4 h-4" weight="bold" />
+													) : (
+														<Copy className="w-4 h-4" weight="bold" />
+													)}
+												</button>
+												<p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-base pr-10">
+													{qa.question_text}
 												</p>
 											</div>
-										)}
-									</div>
-								)}
+										</div>
+									)}
 
-								{/* Feedback for this question */}
-								{qa.feedback && (
-									<div>
-										<h4 className="text-sm font-semibold text-gray-400 mb-2">
-											Feedback:
-										</h4>
-										<p className="text-gray-300 leading-relaxed bg-blue-900/20 border border-blue-800/30 p-3 rounded-lg">
-											{qa.feedback}
-										</p>
+									<div className="mb-6">
+										<h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+											<CheckCircle className="w-5 h-5 text-green-600" weight="bold" />
+											Jawaban {isTeacher ? "Mahasiswa" : "Anda"}:
+										</h3>
+										<div className="bg-green-50 rounded-md p-6 relative">
+											<button
+												onClick={() => handleCopyText(qa.answer_text, "Jawaban", qa.question_id, true)}
+												className={`absolute top-3 right-3 p-2 rounded-md transition-all duration-200 shadow-md hover:shadow-lg ${copiedAnswers.has(qa.question_id)
+														? 'bg-green-500 text-white'
+														: 'bg-green-500 text-white hover:bg-gray-400'
+													}`}
+												title={copiedAnswers.has(qa.question_id) ? "Tersalin!" : "Salin jawaban"}
+											>
+												{copiedAnswers.has(qa.question_id) ? (
+													<Check className="w-4 h-4" weight="bold" />
+												) : (
+													<Copy className="w-4 h-4" weight="bold" />
+												)}
+											</button>
+											<p className="text-gray-700 leading-relaxed whitespace-pre-wrap pr-10">
+												{qa.answer_text}
+											</p>
+										</div>
 									</div>
-								)}
+
+									{qa.rubric_pemahaman !== undefined && (
+										<div className="mb-6">
+											<h4 className="text-sm font-semibold text-gray-900 mb-3">
+												Skor Rubrik:
+											</h4>
+											<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+												<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+													<p className="text-xs text-blue-700 mb-1 font-medium">
+														Pemahaman
+													</p>
+													{qa.rubric_pemahaman > 0 ? (
+														<p className="text-blue-900 font-bold text-lg">
+															{qa.rubric_pemahaman.toFixed(1)}
+														</p>
+													) : (
+														<div>
+															<p className="text-blue-900 font-bold text-lg">
+																0.0
+															</p>
+															<p className="text-blue-600 text-xs mt-1">
+																Tidak dinilai
+															</p>
+														</div>
+													)}
+												</div>
+												<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+													<p className="text-xs text-blue-700 mb-1 font-medium">
+														Kelengkapan
+													</p>
+													{qa.rubric_kelengkapan && qa.rubric_kelengkapan > 0 ? (
+														<p className="text-blue-900 font-bold text-lg">
+															{qa.rubric_kelengkapan.toFixed(1)}
+														</p>
+													) : (
+														<div>
+															<p className="text-blue-900 font-bold text-lg">
+																0.0
+															</p>
+															<p className="text-blue-600 text-xs mt-1">
+																Tidak dinilai
+															</p>
+														</div>
+													)}
+												</div>
+												<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+													<p className="text-xs text-blue-700 mb-1 font-medium">
+														Kejelasan
+													</p>
+													{qa.rubric_kejelasan && qa.rubric_kejelasan > 0 ? (
+														<p className="text-blue-900 font-bold text-lg">
+															{qa.rubric_kejelasan.toFixed(1)}
+														</p>
+													) : (
+														<div>
+															<p className="text-blue-900 font-bold text-lg">
+																0.0
+															</p>
+															<p className="text-blue-600 text-xs mt-1">
+																Tidak dinilai
+															</p>
+														</div>
+													)}
+												</div>
+												<div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg text-center border border-blue-200 shadow-sm">
+													<p className="text-xs text-blue-700 mb-1 font-medium">
+														Analisis
+													</p>
+													{qa.rubric_analisis && qa.rubric_analisis > 0 ? (
+														<p className="text-blue-900 font-bold text-lg">
+															{qa.rubric_analisis.toFixed(1)}
+														</p>
+													) : (
+														<div>
+															<p className="text-blue-900 font-bold text-lg">
+																0.0
+															</p>
+															<p className="text-blue-600 text-xs mt-1">
+																Tidak dinilai
+															</p>
+														</div>
+													)}
+												</div>
+											</div>
+
+											<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+												<div className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg text-center border border-green-200 shadow-sm">
+													<p className="text-xs text-green-700 mb-1 font-medium">
+														Similarity Score
+													</p>
+													{qa.embedding_similarity && qa.embedding_similarity > 0 ? (
+														<p className="text-green-900 font-bold text-lg">
+															{(qa.embedding_similarity * 100).toFixed(1)}%
+														</p>
+													) : (
+														<div>
+															<p className="text-green-900 font-bold text-lg">
+																0.0%
+															</p>
+															<p className="text-green-600 text-xs mt-1">
+																Tidak dinilai
+															</p>
+														</div>
+													)}
+												</div>
+												<div className="bg-gradient-to-br from-red-50 to-red-100 p-3 rounded-lg text-center border border-red-200 shadow-sm">
+													<p className="text-xs text-red-700 mb-1 font-medium">
+														Rata-rata
+													</p>
+													{qa.rubric_rata_rata && qa.rubric_rata_rata > 0 ? (
+														<p className="text-red-900 font-bold text-lg">
+															{qa.rubric_rata_rata.toFixed(1)}
+														</p>
+													) : (
+														<div>
+															<p className="text-red-900 font-bold text-lg">
+																0.0
+															</p>
+															<p className="text-red-600 text-xs mt-1">
+																Tidak dinilai
+															</p>
+														</div>
+													)}
+												</div>
+											</div>
+										</div>
+									)}
+
+									{qa.feedback && (
+										<div className="mt-6">
+											<h4 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+												<span className="text-yellow-600">💡</span>
+												Feedback dari AI:
+											</h4>
+											<div className="bg-yellow-50 border-2 border-yellow-400 rounded-md p-4">
+												<p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+													{qa.feedback}
+												</p>
+											</div>
+										</div>
+									)}
+								</div>
 							</div>
 						))}
 					</div>
 				</div>
-
-				{/* Action Buttons */}
-				<div className="flex justify-center gap-4">
-					<Button onClick={handleBack} variant="outline" size="lg">
-						Kembali
-					</Button>
-				</div>
 			</main>
-
-			<Footer />
 		</div>
 	);
 }

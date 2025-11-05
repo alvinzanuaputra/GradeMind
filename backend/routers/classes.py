@@ -70,14 +70,14 @@ async def create_class(
     kelas = result.scalar_one()
     
     return ClassResponse(
-        id=kelas.id,
-        name=kelas.name,
-        description=kelas.description,
-        class_code=kelas.class_code,
-        teacher_id=kelas.teacher_id,
-        teacher_name=kelas.teacher.fullname or kelas.teacher.username,
-        participant_count=len(kelas.participants),
-        created_at=kelas.created_at
+        id=kelas.id, # type: ignore
+        name=kelas.name, # type: ignore
+        description=kelas.description, # type: ignore
+        class_code=kelas.class_code, # type: ignore
+        teacher_id=kelas.teacher_id, # type: ignore
+        teacher_name=kelas.teacher.fullname or kelas.teacher.username, # type: ignore
+        participant_count=len(kelas.participants), # type: ignore
+        created_at=kelas.created_at # type: ignore
     )
 
 @router.get("/search")
@@ -86,7 +86,7 @@ async def search_classes(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
-    if current_user.user_role == UserRole.DOSEN:
+    if current_user.user_role == UserRole.DOSEN: # type: ignore
         result = await db.execute(
             select(Kelas)
             .options(selectinload(Kelas.teacher), selectinload(Kelas.participants))
@@ -131,7 +131,7 @@ async def get_user_classes(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
-    if current_user.user_role == UserRole.DOSEN:
+    if current_user.user_role == UserRole.DOSEN: # type: ignore
         result = await db.execute(
             select(Kelas)
             .options(selectinload(Kelas.teacher), selectinload(Kelas.participants))
@@ -149,14 +149,14 @@ async def get_user_classes(
     
     return [
         ClassResponse(
-            id=kelas.id,
-            name=kelas.name,
-            description=kelas.description,
-            class_code=kelas.class_code,
-            teacher_id=kelas.teacher_id,
-            teacher_name=kelas.teacher.fullname or kelas.teacher.username,
+            id=kelas.id, # type: ignore
+            name=kelas.name, # type: ignore
+            description=kelas.description, # type: ignore
+            class_code=kelas.class_code, # type: ignore
+            teacher_id=kelas.teacher_id, # type: ignore
+            teacher_name=kelas.teacher.fullname or kelas.teacher.username, # type: ignore
             participant_count=len(kelas.participants),
-            created_at=kelas.created_at
+            created_at=kelas.created_at # type: ignore
         )
         for kelas in classes
     ]
@@ -184,29 +184,31 @@ async def get_class_detail(
     is_teacher = kelas.teacher_id == current_user.id
     is_participant = any(p.user_id == current_user.id for p in kelas.participants)
     
-    if not is_teacher and not is_participant:
+    if not is_teacher and not is_participant: # type: ignore
         raise HTTPException(status_code=403, detail="Tidak punya permission untuk melihat kelas ini")
     
     participants = [
         {
             "id": p.user.id,
+            "user_id": p.user_id,
             "username": p.user.username,
-            "full_name": p.user.fullname,
+            "fullname": p.user.fullname,
             "email": p.user.email,
+            "profile_picture": p.user.profile_picture,
             "joined_at": p.joined_at
         }
         for p in kelas.participants
     ]
     
     return ClassDetailResponse(
-        id=kelas.id,
-        name=kelas.name,
-        description=kelas.description,
-        class_code=kelas.class_code,
-        teacher_id=kelas.teacher_id,
-        teacher_name=kelas.teacher.fullname or kelas.teacher.username,
+        id=int(kelas.id), # type: ignore
+        name=str(kelas.name),
+        description=str(kelas.description) if kelas.description is not None else None,
+        class_code=str(kelas.class_code),
+        teacher_id=int(kelas.teacher_id), # type: ignore
+        teacher_name=str(kelas.teacher.fullname) if kelas.teacher.fullname else str(kelas.teacher.username),
         participant_count=len(kelas.participants),
-        created_at=kelas.created_at,
+        created_at=kelas.created_at, # type: ignore
         participants=participants,
         assignments_count=len(kelas.assignments)
     )
@@ -226,14 +228,14 @@ async def update_class(
     if not kelas:
         raise HTTPException(status_code=404, detail="Kelas tidak ditemukan")
     
-    if kelas.teacher_id != current_user.id:
+    if kelas.teacher_id != current_user.id: # type: ignore
         raise HTTPException(status_code=403, detail="Tidak punya permission untuk mengubah kelas ini")
     
     if request.name is not None:
-        kelas.name = request.name
+        kelas.name = request.name # type: ignore
     if request.description is not None:
-        kelas.description = request.description
-    
+        kelas.description = request.description # type: ignore
+
     await db.commit()
     await db.refresh(kelas)
     
@@ -245,14 +247,14 @@ async def update_class(
     kelas = result.scalar_one()
     
     return ClassResponse(
-        id=kelas.id,
-        name=kelas.name,
-        description=kelas.description,
-        class_code=kelas.class_code,
-        teacher_id=kelas.teacher_id,
-        teacher_name=kelas.teacher.fullname or kelas.teacher.username,
-        participant_count=len(kelas.participants),
-        created_at=kelas.created_at
+        id=kelas.id, # type: ignore
+        name=kelas.name, # type: ignore
+        description=kelas.description, # type: ignore
+        class_code=kelas.class_code, # type: ignore
+        teacher_id=kelas.teacher_id, # type: ignore
+        teacher_name=kelas.teacher.fullname or kelas.teacher.username, # type: ignore
+        participant_count=len(kelas.participants), # type: ignore
+        created_at=kelas.created_at # type: ignore
     )
 
 @router.delete("/{class_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -269,12 +271,11 @@ async def delete_class(
     if not kelas:
         raise HTTPException(status_code=404, detail="Kelas tidak ditemukan")
     
-    if kelas.teacher_id != current_user.id:
+    if kelas.teacher_id != current_user.id: # type: ignore
         raise HTTPException(status_code=403, detail="Tidak punya permission untuk menghapus kelas ini")
     
     await db.delete(kelas)
     await db.commit()
-    
     return None
 
 @router.post("/join", status_code=status.HTTP_200_OK)
@@ -289,9 +290,9 @@ async def join_class(
     kelas = result.scalar_one_or_none()
     
     if not kelas:
-        raise HTTPException(status_code=404, detail="Kelas tidak ditemukan dengan kode ini")
+        raise HTTPException(status_code=404, detail="Kelas tidak ditemukan dengan menggunakan kode ini")
     
-    if kelas.teacher_id == current_user.id:
+    if kelas.teacher_id == current_user.id: # type: ignore
         raise HTTPException(status_code=400, detail="Anda adalah guru dari kelas ini")
     
     existing = await db.execute(
@@ -326,7 +327,7 @@ async def get_invite_info(
     if not kelas:
         raise HTTPException(status_code=404, detail="Kelas tidak ditemukan")
     
-    if kelas.teacher_id != current_user.id:
+    if kelas.teacher_id != current_user.id: # type: ignore
         raise HTTPException(status_code=403, detail="Tidak punya permission untuk mengundang anggota kelas ini")
     
     return {
@@ -350,7 +351,7 @@ async def remove_participant(
     if not kelas:
         raise HTTPException(status_code=404, detail="Kelas tidak ditemukan")
     
-    if kelas.teacher_id != current_user.id:
+    if kelas.teacher_id != current_user.id: # type: ignore
         raise HTTPException(status_code=403, detail="Tidak punya permission untuk menghapus anggota kelas ini")
     
     result = await db.execute(
@@ -360,12 +361,8 @@ async def remove_participant(
         )
     )
     participant = result.scalar_one_or_none()
-    
     if not participant:
         raise HTTPException(status_code=404, detail="Anggota tidak ditemukan")
-    
     await db.delete(participant)
     await db.commit()
-    
     return None
-

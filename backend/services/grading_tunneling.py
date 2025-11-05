@@ -2,7 +2,7 @@ from typing import Dict
 import requests
 import os
 
-AI_TUNNEL_URL = os.getenv("AI_TUNNEL_URL", "https://3775e9493c9d.ngrok-free.app/grade")
+AI_TUNNEL_URL = os.getenv("AI_TUNNEL_URL", "http://localhost:5555/grade")
 DEFAULT_MODEL = os.getenv("AI_MODEL", "qwen2.5:3b-instruct")
 TIMEOUT = int(os.getenv("AI_TIMEOUT", "120"))
 
@@ -25,17 +25,16 @@ async def grade_question_via_tunnel(
         response = requests.post(AI_TUNNEL_URL, json=payload, timeout=TIMEOUT)
         response.raise_for_status()
         result = response.json()
-        
         final_score_percentage = result.get("final_score", 0.0)
         rubric_scores = result.get("rubric_scores", {})
         embedding_similarity = result.get("embedding_similarity", 0.0)
         feedback = result.get("feedback", "")
         llm_time = result.get("llm_time", 0.0)
         similarity_time = result.get("similarity_time", 0.0)
-        
         final_score = round((final_score_percentage / 100) * question_points, 2)
+        final_score = max(0.0, final_score)
         
-        print(f"✅ AI grading completed:")
+        print(f"Penilaian Via AI Tunnel:")
         print(f"   - Final Score: {final_score}/{question_points} ({final_score_percentage}%)")
         print(f"   - Rubric Scores: {rubric_scores}")
         print(f"   - Embedding Similarity: {embedding_similarity}")
@@ -45,23 +44,29 @@ async def grade_question_via_tunnel(
             "final_score": final_score,
             "feedback": feedback,
             "rubric_scores": {
-                "pemahaman": rubric_scores.get("pemahaman", 0.0),
-                "kelengkapan": rubric_scores.get("kelengkapan", 0.0),
-                "kejelasan": rubric_scores.get("kejelasan", 0.0),
-                "analisis": rubric_scores.get("analisis", 0.0),
-                "rata_rata": rubric_scores.get("rata_rata", 0.0),
+                "pemahaman": max(0.0, rubric_scores.get("pemahaman", 0.0)),
+                "kelengkapan": max(0.0, rubric_scores.get("kelengkapan", 0.0)),
+                "kejelasan": max(0.0, rubric_scores.get("kejelasan", 0.0)),
+                "analisis": max(0.0, rubric_scores.get("analisis", 0.0)),
+                "rata_rata": max(0.0, rubric_scores.get("rata_rata", 0.0)),
             },
-            "embedding_similarity": embedding_similarity,
+            "embedding_similarity": max(0.0, embedding_similarity),
             "llm_time": llm_time,
             "similarity_time": similarity_time
         }
-    
     except requests.exceptions.Timeout:
-        raise RuntimeError(f"AI tunnel request timed out after {TIMEOUT} seconds")
-    except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Failed to connect to AI tunnel at {AI_TUNNEL_URL}: {e}")
-    except Exception as e:
-        raise RuntimeError(f"Error processing AI tunnel response: {e}")
+        raise RuntimeError("Permintaan ke server AI tunnel melebihi batas waktu.")
+    except requests.exceptions.RequestException:
+        raise RuntimeError("Tidak dapat terhubung ke server AI tunnel.")
+    except Exception:
+        raise RuntimeError("Terjadi kesalahan saat memproses permintaan ke AI tunnel.")
+
+    # except requests.exceptions.Timeout:
+    #     raise RuntimeError(f"Permintaan AI tunnel timed out setelah {TIMEOUT} detik")
+    # except requests.exceptions.RequestException as e:
+    #     raise RuntimeError(f"Gagal terhubung ke {AI_TUNNEL_URL}: {e}")
+    # except Exception as e:
+    #     raise RuntimeError(f"Error saat memproses AI Tunnel: {e}")
 
 
 async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
@@ -83,7 +88,7 @@ async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
     aggregate_similarity = []
     
     print(f"\n{'='*60}")
-    print(f"🚀 Starting batch grading for {len(questions)} questions via AI tunnel")
+    print(f"🚀 Memulai penilaian batch untuk {len(questions)} pertanyaan melalui AI tunnel")
     print(f"{'='*60}")
     
     for idx, question in enumerate(questions, 1):
@@ -95,7 +100,7 @@ async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
         answer_data = answers_map.get(question_id)
         student_answer = answer_data["answer_text"] if answer_data else ""
         
-        print(f"\n📝 Grading Question {idx}/{len(questions)} (ID: {question_id}, Points: {points})")
+        print(f"\nPenilaian pertanyaan {idx}/{len(questions)} (ID: {question_id}, Points: {points})")
         
         try:
             grading_result = await grade_question_via_tunnel(
@@ -127,7 +132,7 @@ async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
             aggregate_similarity.append(grading_result["embedding_similarity"])
         
         except Exception as e:
-            print(f"❌ Error grading question {question_id}: {e}")
+            print(f"Error menilai  {question_id}: {e}")
             results.append({
                 "question_id": question_id,
                 "final_score": 0.0,
@@ -147,15 +152,15 @@ async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
     
     percentage = round((total_score / total_points * 100), 2) if total_points > 0 else 0.0
     num_questions = len(questions)
-    
-    avg_pemahaman = round(sum(aggregate_pemahaman) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_kelengkapan = round(sum(aggregate_kelengkapan) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_kejelasan = round(sum(aggregate_kejelasan) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_analisis = round(sum(aggregate_analisis) / num_questions, 2) if num_questions > 0 else 0.0
-    avg_similarity = round(sum(aggregate_similarity) / num_questions, 2) if num_questions > 0 else 0.0
+    avg_pemahaman = max(0.0, round(sum(aggregate_pemahaman) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_kelengkapan = max(0.0, round(sum(aggregate_kelengkapan) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_kejelasan = max(0.0, round(sum(aggregate_kejelasan) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_analisis = max(0.0, round(sum(aggregate_analisis) / num_questions, 2)) if num_questions > 0 else 0.0
+    avg_similarity = max(0.0, round(sum(aggregate_similarity) / num_questions, 2)) if num_questions > 0 else 0.0
+    total_score = max(0.0, total_score)
     
     print(f"\n{'='*60}")
-    print(f"🏁 BATCH GRADING COMPLETED")
+    print(f"Rangkuman batch grading:")
     print(f"{'='*60}")
     print(f"📊 Total Score: {total_score}/{total_points} ({percentage}%)")
     print(f"📊 Avg Rubrics - P: {avg_pemahaman}, K: {avg_kelengkapan}, KJ: {avg_kejelasan}, A: {avg_analisis}")
@@ -178,4 +183,3 @@ async def grade_submission_batch_via_tunnel(submission_data: Dict) -> Dict:
         "total_llm_time": round(total_llm_time, 3),
         "total_similarity_time": round(total_similarity_time, 3)
     }
-

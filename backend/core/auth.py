@@ -30,7 +30,7 @@ class JWTStrategy:
         return jwt.encode(data, self.secret, algorithm="HS256")
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=ACCESS_TOKEN_EXPIRE_MINUTES * 60) # type: ignore
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -40,7 +40,7 @@ async def get_current_user(
     try:
         payload = jwt.decode(
             token, 
-            SECRET_KEY, 
+            SECRET_KEY, # type: ignore 
             algorithms=["HS256"],
             audience=["fastapi-users:auth"]
         )
@@ -49,24 +49,24 @@ async def get_current_user(
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload",
+                detail="Token tidak valid saat payload",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        result = await db.execute(select(User).where(User.id == int(user_id)))
+        result = await db.execute(select(User).where(User.id == int(user_id))) # type: ignore
         user = result.scalar_one_or_none()
         
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found",
+                detail="User tidak ditemukan",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
         if not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="User account is inactive"
+                detail="Akun pengguna tidak aktif",
             )
         
         return user
@@ -74,13 +74,13 @@ async def get_current_user(
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired",
+            detail="Token telah kedaluwarsa",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Token tidak valid",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except HTTPException:
@@ -88,23 +88,23 @@ async def get_current_user(
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="Tidak bisa memverifikasi kredensial",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
 async def get_current_dosen(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.user_role != UserRole.DOSEN:
+    if current_user.user_role != UserRole.DOSEN: # type: ignore
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only dosen (teachers) can access this resource"
+            detail="Hanya dosen dari role dosen yang dapat mengakses resource ini"
         )
     return current_user
 
 async def get_current_mahasiswa(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.user_role != UserRole.MAHASISWA:
+    if current_user.user_role != UserRole.MAHASISWA: # type: ignore
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only mahasiswa (students) can access this resource"
+            detail="Hanya mahasiswa dari role mahasiswa yang dapat mengakses resource ini"
         )
     return current_user
 

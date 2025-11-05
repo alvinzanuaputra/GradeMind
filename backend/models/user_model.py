@@ -14,44 +14,28 @@ class UserRole(enum.Enum):
     DOSEN = "dosen"
     MAHASISWA = "mahasiswa"
 
-
 class User(SQLAlchemyBaseUserTable[int], Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True) # type: ignore
     profile_picture = Column(String, nullable=True)
     fullname = Column(String, nullable=False)
     username = Column(String, unique=True, nullable=False, index=True)
-    email = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, nullable=False, index=True) # type: ignore
     notelp = Column(String, nullable=True)
+    nrp = Column(String, unique=True, nullable=True, index=True)  # NRP untuk mahasiswa ITS (optional, must be unique if provided)
     institution = Column(String, nullable=True)
     biografi = Column(Text, nullable=True)
     user_role = Column(SQLEnum(UserRole), default=UserRole.MAHASISWA, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    is_superuser = Column(Boolean, default=False, nullable=False)
-    is_verified = Column(Boolean, default=False, nullable=False)
+    hashed_password = Column(String, nullable=False) # type: ignore
+    is_active = Column(Boolean, default=True, nullable=False) # type: ignore
+    is_superuser = Column(Boolean, default=False, nullable=False) # type: ignore
+    is_verified = Column(Boolean, default=False, nullable=False) # type: ignore
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
-    oauth_accounts = relationship("UserOAuth", back_populates="user", cascade="all, delete-orphan")
     created_classes = relationship("Kelas", back_populates="teacher", foreign_keys="[Kelas.teacher_id]")
     class_participants = relationship("ClassParticipant", back_populates="user")
     assignment_submissions = relationship("AssignmentSubmission", back_populates="student")
-
-
-class UserOAuth(Base):
-    __tablename__ = "users_oauth"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    oauth_provider = Column(String, nullable=False)
-    oauth_id = Column(String, nullable=False)
-    access_token = Column(Text, nullable=True)
-    refresh_token = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    
-    user = relationship("User", back_populates="oauth_accounts")
-
 
 class UserSession(Base):
     __tablename__ = "user_sessions"
@@ -68,18 +52,17 @@ class UserSession(Base):
     
     user = relationship("User")
 
-
 class UserCreate(schemas.BaseUserCreate):
     fullname: str
     username: str
     email: str
     password: str
-    user_role: UserRole = UserRole.MAHASISWA
+    user_role: UserRole
     notelp: Optional[str] = None
+    nrp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None
     profile_picture: Optional[str] = None
-
 
 class UserRead(schemas.BaseUser[int]):
     id: int
@@ -88,14 +71,13 @@ class UserRead(schemas.BaseUser[int]):
     email: str
     user_role: UserRole
     notelp: Optional[str] = None
+    nrp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None
     profile_picture: Optional[str] = None
-    is_active: bool
-    is_superuser: bool
-    is_verified: bool
-    is_oauth_user: bool = False
-
+    is_active: bool # type: ignore
+    is_superuser: bool # type: ignore
+    is_verified: bool # type: ignore
 
 class UserUpdate(schemas.BaseUserUpdate):
     fullname: Optional[str] = None
@@ -103,6 +85,7 @@ class UserUpdate(schemas.BaseUserUpdate):
     email: Optional[str] = None
     user_role: Optional[UserRole] = None
     notelp: Optional[str] = None
+    nrp: Optional[str] = None
     institution: Optional[str] = None
     biografi: Optional[str] = None
     profile_picture: Optional[str] = None

@@ -14,4 +14,3 @@ class Question(Base):
 
     assignment = relationship("Assignment", back_populates="questions")
     question_answers = relationship("QuestionAnswer", back_populates="question", cascade="all, delete-orphan")
-

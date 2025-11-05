@@ -1,10 +1,6 @@
-// Legacy API functions - maintained for backward compatibility
-// New code should use services from @/services instead
-
 import { authService, userService, profileService } from "@/services";
 import type { User, UserCreate, LoginRequest, LoginResponse, RegisterResponse, UserUpdate } from "@/types";
 
-// Re-export types for backward compatibility
 export type { User };
 
 export interface UpdateProfileData {
@@ -45,7 +41,6 @@ export interface ApiError {
   detail: string;
 }
 
-// Legacy wrapper functions using new services
 export const registerUser = async (data: RegisterData): Promise<RegisterResponse> => {
   return authService.register(data as UserCreate);
 };
@@ -58,15 +53,6 @@ export const getCurrentUser = async (token: string): Promise<User> => {
   return authService.getCurrentUser();
 };
 
-export const getGoogleAuthUrl = async (): Promise<string> => {
-  const result = await authService.getGoogleAuthUrl();
-  return result.authorization_url;
-};
-
-export const getGithubAuthUrl = async (): Promise<string> => {
-  const result = await authService.getGithubAuthUrl();
-  return result.authorization_url;
-};
 
 export const updateUserProfile = async (token: string, data: UpdateProfileData): Promise<User> => {
   return userService.updateProfile(data as UserUpdate);

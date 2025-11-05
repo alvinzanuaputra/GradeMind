@@ -1,4 +1,3 @@
-// ==================== USER & AUTH TYPES ====================
 export type UserRole = "dosen" | "mahasiswa";
 
 export interface User {
@@ -11,10 +10,10 @@ export interface User {
     biografi?: string;
     profile_picture?: string;
     user_role: UserRole;
+    nrp?: string;
     is_active: boolean;
     is_verified: boolean;
     is_superuser: boolean;
-    is_oauth_user?: boolean;
 }
 
 export interface UserCreate {
@@ -27,6 +26,7 @@ export interface UserCreate {
     institution?: string;
     biografi?: string;
     profile_picture?: string;
+    nrp?: string;
 }
 
 export interface UserUpdate {
@@ -39,6 +39,7 @@ export interface UserUpdate {
     biografi?: string;
     profile_picture?: string;
     password?: string;
+    nrp?: string;
 }
 
 export interface LoginRequest {
@@ -64,7 +65,6 @@ export interface AuthState {
     loginTimestamp?: string;
 }
 
-// ==================== PROFILE TYPES ====================
 export interface UpdateProfileRequest {
     fullname?: string;
     email?: string;
@@ -84,7 +84,6 @@ export interface ProfileResponse {
     profile_picture?: string;
 }
 
-// ==================== CLASS TYPES ====================
 export interface CreateClassRequest {
     name: string;
     description?: string;
@@ -121,6 +120,7 @@ export interface ParticipantInfo {
     username: string;
     fullname: string;
     email: string;
+    profile_picture?: string;
     joined_at: string;
 }
 
@@ -130,7 +130,6 @@ export interface InviteCodeResponse {
     class_name: string;
 }
 
-// ==================== ASSIGNMENT TYPES ====================
 export type AssignmentType = "file_based" | "text_based";
 export type SubmissionType = "typed" | "ocr";
 
@@ -142,7 +141,14 @@ export interface CreateAssignmentRequest {
     deadline?: string;
     max_score?: number;
     minimal_score?: number;
-    questions?: string; // Questions as a string (can contain multiple questions)
+    questions?: QuestionCreate[];
+}
+
+export interface QuestionUpdate {
+    id?: number;
+    question_text?: string;
+    reference_answer?: string;
+    points?: number;
 }
 
 export interface UpdateAssignmentRequest {
@@ -153,14 +159,13 @@ export interface UpdateAssignmentRequest {
     max_score?: number;
     minimal_score?: number;
     is_published?: boolean;
-    questions?: string; // Questions as a string
+    questions?: QuestionUpdate[];
 }
 
 export interface QuestionCreate {
     question_text: string;
     reference_answer: string;
-    question_order: number;
-    points: number;
+    points?: number;
 }
 
 export interface Question {
@@ -223,15 +228,26 @@ export interface MySubmissionResponse {
         answer_text: string;
         final_score?: number;
         feedback?: string;
+        rubric_pemahaman?: number;
+        rubric_kelengkapan?: number;
+        rubric_kejelasan?: number;
+        rubric_analisis?: number;
+        rubric_rata_rata?: number;
+        embedding_similarity?: number;
     }>;
     total_score?: number;
     max_score?: number;
     percentage?: number;
     graded?: boolean;
     submission?: SubmissionResponse;
+    avg_pemahaman?: number;
+    avg_kelengkapan?: number;
+    avg_kejelasan?: number;
+    avg_analisis?: number;
+    avg_embedding_similarity?: number;
+    graded_at?: string;
 }
 
-// ==================== GRADING TYPES ====================
 export interface GradeSubmissionRequest {
     total_score: number;
 }
@@ -321,6 +337,8 @@ export interface SubmissionDetailResponse {
     submission_id: number;
     student_id: number;
     student_name: string;
+    student_username?: string;
+    student_nrp?: string;
     assignment_id: number;
     assignment_title: string;
     submission_type: SubmissionType;
@@ -329,6 +347,7 @@ export interface SubmissionDetailResponse {
     total_score?: number;
     max_score?: number;
     percentage?: number;
+    minimal_score?: number;
     avg_pemahaman?: number;
     avg_kelengkapan?: number;
     avg_kejelasan?: number;
@@ -338,7 +357,23 @@ export interface SubmissionDetailResponse {
     question_details: QuestionGradeDetail[];
 }
 
-// ==================== OCR TYPES ====================
+export interface ExcelExportStudentData {
+    nrp: string;
+    nama_lengkap: string;
+    username: string;
+    nilai_total: number;
+    nilai_maksimal: number;
+    persentase: number;
+    [key: string]: string | number;
+}
+
+export interface ExcelExportData {
+    class_name: string;
+    assignment_title: string;
+    kkm: number;
+    students: ExcelExportStudentData[];
+}
+
 export interface OCRResultRead {
     success: boolean;
     message: string;
@@ -347,7 +382,6 @@ export interface OCRResultRead {
     processed_at?: string;
 }
 
-// ==================== DASHBOARD TYPES ====================
 export interface DashboardStats {
     total_classes?: number;
     total_assignments?: number;
@@ -362,7 +396,6 @@ export interface RecentActivity {
     timestamp: string;
 }
 
-// ==================== LEGACY UI TYPES (for existing components) ====================
 export interface LoginFormData {
     emailOrUsername: string;
     password: string;
@@ -403,7 +436,6 @@ export interface PasswordStrengthResult {
     hasSpecialChar: boolean;
 }
 
-// ==================== API RESPONSE TYPES ====================
 export interface ApiResponse<T> {
     success: boolean;
     data?: T;

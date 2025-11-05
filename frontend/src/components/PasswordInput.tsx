@@ -43,7 +43,7 @@ export default function PasswordInput({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-white mb-2">
+      <label htmlFor={id} className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
       <div className="relative">
@@ -54,13 +54,13 @@ export default function PasswordInput({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className="w-full px-6 py-3 bg-white dark:bg-transparent border-2 border-gray-300 dark:border-gray-600 rounded-full text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-500 dark:focus:border-gray-400 transition-colors"
+          className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-2 border-gray-300 rounded-full text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 hover:border-gray-400 transition-all"
           required
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300"
+          className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
           aria-label={
             showPassword ? "Sembunyikan password" : "Tampilkan password"
           }
@@ -74,12 +74,12 @@ export default function PasswordInput({
       </div>
 
       {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mt-2 text-sm text-red-600">{error}</p>
       )}
 
       {showStrength && value && strength && (
         <div className="mt-2">
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 strengthColors[strength.strength]
@@ -87,7 +87,7 @@ export default function PasswordInput({
               style={{ width: strengthWidths[strength.strength] }}
             />
           </div>
-          <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">
+          <p className="text-xs mt-1 text-gray-600">
             {strength.message}
           </p>
         </div>

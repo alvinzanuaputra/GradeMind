@@ -15,18 +15,13 @@ class ApiClient {
 
   private getAuthToken(): string | null {
     if (typeof window === "undefined") return null;
-    
-    // Try to get from cookie first
     const cookieToken = this.getCookieValue("token");
     if (cookieToken) return cookieToken;
-    
-    // Fall back to localStorage
     return localStorage.getItem("token");
   }
 
   private getCookieValue(name: string): string | null {
     if (typeof window === "undefined") return null;
-
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
@@ -39,18 +34,16 @@ class ApiClient {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       let errorMessage = `HTTP error! status: ${response.status}`;
-      
+
       try {
         const errorData: ApiError = await response.json();
         errorMessage = errorData.detail || errorMessage;
       } catch {
-        // If JSON parsing fails, use the default error message
+        console.error("Failed to parse error response as JSON");
       }
-      
+
       throw new Error(errorMessage);
     }
-
-    // Handle 204 No Content
     if (response.status === 204) {
       return {} as T;
     }
@@ -60,9 +53,9 @@ class ApiClient {
 
   async get<T>(endpoint: string, config?: RequestConfig): Promise<T> {
     const token = config?.token || this.getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(config?.headers || {}),
+      ...(config?.headers as Record<string, string> || {}),
     };
 
     if (token) {
@@ -80,9 +73,9 @@ class ApiClient {
 
   async post<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<T> {
     const token = config?.token || this.getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(config?.headers || {}),
+      ...(config?.headers as Record<string, string> || {}),
     };
 
     if (token) {
@@ -101,9 +94,9 @@ class ApiClient {
 
   async put<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<T> {
     const token = config?.token || this.getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(config?.headers || {}),
+      ...(config?.headers as Record<string, string> || {}),
     };
 
     if (token) {
@@ -122,9 +115,9 @@ class ApiClient {
 
   async patch<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<T> {
     const token = config?.token || this.getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(config?.headers || {}),
+      ...(config?.headers as Record<string, string> || {}),
     };
 
     if (token) {
@@ -143,9 +136,9 @@ class ApiClient {
 
   async delete<T>(endpoint: string, config?: RequestConfig): Promise<T> {
     const token = config?.token || this.getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(config?.headers || {}),
+      ...(config?.headers as Record<string, string> || {}),
     };
 
     if (token) {
@@ -163,22 +156,19 @@ class ApiClient {
 
   async uploadFile<T>(endpoint: string, formData: FormData, config?: RequestConfig): Promise<T> {
     const token = config?.token || this.getAuthToken();
-    const headers: HeadersInit = {
-      ...(config?.headers || {}),
+    const headers: Record<string, string> = {
+      ...(config?.headers as Record<string, string> || {}),
     };
 
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-
-    // Note: Do NOT set Content-Type for FormData, let the browser set it with boundary
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "POST",
       headers,
       body: formData,
       ...config,
     });
-
     return this.handleResponse<T>(response);
   }
 }

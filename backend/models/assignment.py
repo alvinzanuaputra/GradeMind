@@ -26,4 +26,3 @@ class Assignment(Base):
     kelas = relationship("Kelas", back_populates="assignments")
     questions = relationship("Question", back_populates="assignment", cascade="all, delete-orphan", order_by="Question.question_order")
     submissions = relationship("AssignmentSubmission", back_populates="assignment", cascade="all, delete-orphan")
-

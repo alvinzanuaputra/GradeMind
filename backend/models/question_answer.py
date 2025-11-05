@@ -22,4 +22,3 @@ class QuestionAnswer(Base):
 
     submission = relationship("AssignmentSubmission", back_populates="question_answers")
     question = relationship("Question", back_populates="question_answers")
-

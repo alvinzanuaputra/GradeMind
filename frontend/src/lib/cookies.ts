@@ -1,22 +1,14 @@
-/**
- * Cookie Management Utilities
- * Handles secure storage of authentication data in browser cookies
- */
-
 interface CookieOptions {
-    expires?: number; // days until expiration
+    expires?: number;
     path?: string;
     domain?: string;
     secure?: boolean;
     sameSite?: 'strict' | 'lax' | 'none';
 }
 
-/**
- * Set a cookie with options
- */
 export function setCookie(name: string, value: string, options: CookieOptions = {}): void {
     const defaults: CookieOptions = {
-        expires: 7, // 7 days default
+        expires: 7,
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -50,9 +42,6 @@ export function setCookie(name: string, value: string, options: CookieOptions = 
     document.cookie = cookieString;
 }
 
-/**
- * Get a cookie value by name
- */
 export function getCookie(name: string): string | null {
     const nameEQ = encodeURIComponent(name) + '=';
     const cookies = document.cookie.split(';');
@@ -70,23 +59,14 @@ export function getCookie(name: string): string | null {
     return null;
 }
 
-/**
- * Delete a cookie
- */
 export function deleteCookie(name: string, path: string = '/'): void {
     setCookie(name, '', { expires: -1, path });
 }
 
-/**
- * Check if a cookie exists
- */
 export function hasCookie(name: string): boolean {
     return getCookie(name) !== null;
 }
 
-/**
- * Get all cookies as object
- */
 export function getAllCookies(): Record<string, string> {
     const cookies: Record<string, string> = {};
     const cookieArray = document.cookie.split(';');

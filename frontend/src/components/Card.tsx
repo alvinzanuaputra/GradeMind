@@ -16,18 +16,18 @@ const Card: React.FC<CardProps> = ({
 }) => {
   const paddingStyles = {
     none: "",
-    sm: "p-3",
+    sm: "p-4",
     md: "p-6",
     lg: "p-8",
   };
   const hoverStyle = hover
-    ? "hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-    : "";
+    ? "hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+    : "transition-shadow duration-200";
   const clickableStyle = onClick ? "cursor-pointer" : "";
   return (
     <div
       className={`
-        bg-transparent rounded-lg shadow-md border border-gray-700
+        bg-white rounded-2xl shadow-lg border border-gray-100 hover:border-gray-200
         ${paddingStyles[padding]}
         ${hoverStyle}
         ${clickableStyle}

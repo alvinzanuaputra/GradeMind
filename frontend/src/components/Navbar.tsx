@@ -5,10 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useTheme } from "@/hooks/useTheme";
 import {
-	Moon,
-	Sun,
 	SignOut,
 	UserCircle,
 	List,
@@ -16,44 +13,28 @@ import {
 	PencilSimple,
 } from "phosphor-react";
 
-const ThemeToggle: React.FC<{ isDark: boolean; toggle: () => void }> = ({
-	isDark,
-	toggle,
-}) => (
-	<button
-		onClick={toggle}
-		className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border bg-gray-700 border-gray-600 hover:bg-gray-600"
-		aria-label="Toggle theme"
-	>
-		{isDark ? (
-			<Sun className="w-5 h-5 text-yellow-400" weight="bold" />
-		) : (
-			<Moon className="w-5 h-5 text-yellow-400" weight="bold" />
-		)}
-	</button>
-);
-
 const NavLink: React.FC<{
 	href: string;
 	isActive: boolean;
 	onClick?: () => void;
 	children: React.ReactNode;
 }> = ({ href, isActive, onClick, children }) => (
-	<Link
-		href={href}
-		className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-			isActive ? "text-yellow-400" : "text-gray-300 hover:text-white"
-		}`}
-		onClick={onClick}
-	>
-		{children}
-	</Link>
+	   <Link
+		   href={href}
+		   className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-md active:scale-95
+			   ${isActive
+				   ? "text-yellow-600 border border-yellow-500 bg-yellow-50 hover:bg-yellow-100/100 scale-105"
+				   : "text-gray-600"}
+		   `}
+		   onClick={onClick}
+	   >
+		   {children}
+	   </Link>
 );
 
 const Navbar: React.FC = () => {
 	const pathname = usePathname();
 	const { isAuthenticated, logout, user } = useAuth();
-	const { isDarkMode, toggleTheme } = useTheme();
 
 	const [showProfileMenu, setShowProfileMenu] = useState(false);
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -90,13 +71,21 @@ const Navbar: React.FC = () => {
 	const homeUrl = isAuthenticated ? "/dashboard" : "/";
 
 	return (
-		<nav className="bg-[#2b2d31] border-b border-gray-700 sticky top-0 z-50 shadow-sm">
+		<nav className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-all duration-300">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
-					<Link href="/" className="flex items-center space-x-2">
-						<div className="text-xl sm:text-2xl font-bold">
-							<span className="text-yellow-400">GRADE</span>
-							<span className="text-white"> MIND</span>
+					<Link href="/" className="flex items-center space-x-1 sm:space-x-2 group">
+						<div className="flex items-center lg:text-4xl md:text-3xl sm:text-2xl text-xl font-extrabold transition-all duration-300 transform group-hover:scale-105">
+							<Image
+								src="/images/logo/grade-mind-logo.png"
+								alt="Logo GradeMind"
+								width={44}
+								height={44}
+								className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-11 lg:h-11 inline-block mr-1 sm:mr-2"
+								unoptimized
+							/>
+							<span className="text-yellow-400 group-hover:animate-pulse">GRADE</span>
+							<span className="text-gray-900"> MIND</span>
 						</div>
 					</Link>
 					<div className="hidden md:flex items-center space-x-4">
@@ -106,72 +95,73 @@ const Navbar: React.FC = () => {
 						<NavLink href="/tentang" isActive={isActive("/tentang")}>
 							Tentang
 						</NavLink>
-						{/* <ThemeToggle isDark={isDarkMode} toggle={toggleTheme} /> */}
 						<div className="relative" ref={profileMenuRef}>
 							<button
 								onClick={() =>
 									setShowProfileMenu(!showProfileMenu)
 								}
-								className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border border-gray-600 hover:border-yellow-400 overflow-hidden bg-gray-400"
+								className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110 border border-gray-600 hover:border-yellow-400 hover:shadow-xl overflow-hidden bg-yellow-400 shadow-lg relative group ${
+									showProfileMenu ? 'animate-zoomOutFade' : ''
+								}`}
 								aria-label="Profile"
 							>
+								<div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 								{isAuthenticated && user?.profile_picture ? (
 									<Image
 										src={user.profile_picture}
 										alt="profil default icon"
 										width={40}
 										height={40}
-										className="w-full h-full object-cover"
+										className="w-full h-full object-cover relative z-10"
 										unoptimized
 										onError={(e) => {
-											const target =
-												e.target as HTMLImageElement;
-											target.style.display = "none";
+											const target = e.target as HTMLImageElement;
+											target.onerror = null;
+											target.src = '';
+											target.style.display = 'none';
 											const parent = target.parentElement;
-											if (parent) {
-												const icon =
-													document.createElement(
-														"div"
-													);
-												icon.innerHTML =
-													'<svg class="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
-												parent.appendChild(
-													icon.firstChild as Node
-												);
+											if (parent && !parent.querySelector('.fallback-profile-icon')) {
+												const icon = document.createElement('div');
+												icon.className = 'fallback-profile-icon';
+												icon.innerHTML = '<svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
+												parent.appendChild(icon.firstChild as Node);
 											}
 										}}
 									/>
 								) : (
 									<UserCircle
-										className="w-6 h-6 text-gray-300"
+										className="w-6 h-6 text-white relative z-10"
 										weight="bold"
 									/>
 								)}
 							</button>
 							{showProfileMenu && (
-								<div className="absolute right-0 mt-2 w-72 bg-gray-800 rounded-lg shadow-lg border border-gray-700 py-2 z-50">
+								<div className="absolute right-0 mt-4 w-86 bg-white rounded-md shadow-xl border border-gray-700 py-2 z-50 animate-slideDown">
 									{isAuthenticated ? (
 										<>
 											<div className="px-4 py-3 border-b border-gray-700">
 												<div className="flex items-center space-x-3">
-													<div className="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-400 shadow-lg flex-shrink-0 bg-gradient-to-br from-yellow-400 to-yellow-600">
+													<div className="w-18 h-18 rounded-full overflow-hidden border-2 border-yellow-400 shadow-lg flex-shrink-0 bg-gradient-to-br from-yellow-400 to-yellow-600">
 														{user?.profile_picture ? (
 															<Image
-																src={
-																	user.profile_picture
-																}
+																src={user.profile_picture}
 																alt="profil default icon"
 																width={48}
 																height={48}
 																className="w-full h-full object-cover"
 																unoptimized
-																onError={(
-																	e
-																) => {
-																	const target =
-																		e.target as HTMLImageElement;
-																	target.style.display =
-																		"none";
+																onError={(e) => {
+																	const target = e.target as HTMLImageElement;
+																	target.onerror = null;
+																	target.src = '';
+																	target.style.display = 'none';
+																	const parent = target.parentElement;
+																	if (parent && !parent.querySelector('.fallback-profile-icon')) {
+																		const icon = document.createElement('div');
+																		icon.className = 'fallback-profile-icon';
+																		icon.innerHTML = '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
+																		parent.appendChild(icon.firstChild as Node);
+																	}
 																}}
 															/>
 														) : (
@@ -184,22 +174,27 @@ const Navbar: React.FC = () => {
 														)}
 													</div>
 													<div className="flex-1 min-w-0">
-														<p className="text-sm font-semibold text-white truncate">
+														<p className="text-lg font-semibold text-black truncate">
 															{user?.fullname ||
 																user?.username ||
 																"Username"}
 														</p>
-														<p className="text-xs text-gray-400 truncate">
+														<p className="text-sm text-gray-800 truncate">
 															{user?.email ||
-																"user@example.com"}
+																"user@gmail.com"}
+														</p>
+														<p className="text-xs text-dark mt-1 font-semibold">
+															anda masuk sebagai {" "}<span className="font-semibold text-yellow-500">
+																{user?.user_role === 'dosen' ? 'dosen' : user?.user_role === 'mahasiswa' ? 'mahasiswa' : 'Error'}
+															</span>
 														</p>
 													</div>
 												</div>
 											</div>
-											<div className="px-2 py-2">
+											<div className="px-3 py-2">
 												<Link
 													href="/profil"
-													className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 rounded-md transition-colors"
+													className="block w-full text-left px-4 py-2 text-sm text-black hover:bg-yellow-400 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 group"
 													onClick={() =>
 														setShowProfileMenu(
 															false
@@ -208,10 +203,10 @@ const Navbar: React.FC = () => {
 												>
 													<div className="flex items-center gap-2">
 														<PencilSimple
-															className="w-4 h-4"
+															className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12"
 															weight="bold"
 														/>
-														Edit Profil
+														Lihat Profil
 													</div>
 												</Link>
 												<button
@@ -221,11 +216,11 @@ const Navbar: React.FC = () => {
 															false
 														);
 													}}
-													className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 rounded-md transition-colors"
+													className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 hover:text-black cursor-pointer group"
 												>
 													<div className="flex items-center gap-2">
 														<SignOut
-															className="w-4 h-4"
+															className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
 															weight="bold"
 														/>
 														Keluar
@@ -236,18 +231,19 @@ const Navbar: React.FC = () => {
 									) : (
 										<>
 											<div className="px-4 py-3 border-b border-gray-700">
-												<p className="text-sm text-gray-400 text-left">
+												<p className="text-sm text-black text-left">
 													Belum masuk
 												</p>
-												<p className="text-xs text-gray-500 text-left mt-1">
+												<p className="text-xs text-gray-900 text-left mt-1">
 													Silakan masuk untuk
-													mengakses fitur lengkap
+													mengakses essai grading otomatis sebagai
+													mahasiswa atau dosen.
 												</p>
 											</div>
 											<div className="px-4 py-2">
 												<Link
 													href="/masuk"
-													className="block w-full text-center px-4 py-2 text-sm text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-md transition-colors font-medium"
+													className="block w-full text-center px-4 py-2 text-sm text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95 font-medium"
 													onClick={() =>
 														setShowProfileMenu(
 															false
@@ -263,21 +259,20 @@ const Navbar: React.FC = () => {
 							)}
 						</div>
 					</div>
-					<div className="md:hidden flex items-center space-x-2">
-						<ThemeToggle isDark={isDarkMode} toggle={toggleTheme} />
+					<div className="md:hidden flex items-center">
 						<button
 							onClick={() => setShowMobileMenu(!showMobileMenu)}
-							className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border bg-gray-700 border-gray-600 hover:bg-gray-600"
+							className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-xs bg-gray-100 hover:bg-gray-200 hover:shadow-md"
 							aria-label="Toggle menu"
 						>
 							{showMobileMenu ? (
 								<X
-									className="w-6 h-6 text-white"
+									className="w-6 h-6 text-dark transition-transform duration-300 rotate-90"
 									weight="bold"
 								/>
 							) : (
 								<List
-									className="w-6 h-6 text-white"
+									className="w-6 h-6 text-dark transition-transform duration-300"
 									weight="bold"
 								/>
 							)}
@@ -287,27 +282,25 @@ const Navbar: React.FC = () => {
 				{showMobileMenu && (
 					<div
 						ref={mobileMenuRef}
-						className="md:hidden absolute top-16 left-0 right-0 bg-[#2b2d31] border-b border-gray-700 shadow-xl z-40 animate-slideDown"
+						className="md:hidden absolute top-16 left-0 right-0 bg-slate-100 shadow-xl z-40 animate-slideDown"
 					>
 						<div className="px-4 py-4 space-y-1">
 							<Link
 								href={homeUrl}
-								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all ${
-									isActive(homeUrl)
-										? "text-yellow-400 bg-gray-800/80"
-										: "text-gray-300 hover:text-white hover:bg-gray-800/50"
-								}`}
+								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 ${isActive(homeUrl)
+									? "text-yellow-400 bg-yellow-50 scale-105"
+									: "text-dark hover:text-gray-500 hover:bg-gray-50"
+									}`}
 								onClick={() => setShowMobileMenu(false)}
 							>
 								<span className="ml-3">Beranda</span>
 							</Link>
 							<Link
 								href="/tentang"
-								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all ${
-									isActive("/tentang")
-										? "text-yellow-400 bg-gray-800/80"
-										: "text-gray-300 hover:text-white hover:bg-gray-800/50"
-								}`}
+								className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 ${isActive("/tentang")
+									? "text-yellow-400 bg-yellow-50 scale-105"
+									: "text-dark hover:text-gray-500 hover:bg-gray-50"
+									}`}
 								onClick={() => setShowMobileMenu(false)}
 							>
 								<span className="ml-3">Tentang</span>
@@ -320,19 +313,24 @@ const Navbar: React.FC = () => {
 											<div className="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-400 shadow-lg flex-shrink-0 bg-gradient-to-br from-yellow-400 to-yellow-600">
 												{user?.profile_picture ? (
 													<Image
-														src={
-															user.profile_picture
-														}
+														src={user.profile_picture}
 														alt="profil default icon"
-														width={48}
-														height={48}
+														width={80}
+														height={80}
 														className="w-full h-full object-cover"
 														unoptimized
 														onError={(e) => {
-															const target =
-																e.target as HTMLImageElement;
-															target.style.display =
-																"none";
+															const target = e.target as HTMLImageElement;
+															target.onerror = null;
+															target.src = '';
+															target.style.display = 'none';
+															const parent = target.parentElement;
+															if (parent && !parent.querySelector('.fallback-profile-icon')) {
+																const icon = document.createElement('div');
+																icon.className = 'fallback-profile-icon';
+																icon.innerHTML = '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
+																parent.appendChild(icon.firstChild as Node);
+															}
 														}}
 													/>
 												) : (
@@ -348,12 +346,15 @@ const Navbar: React.FC = () => {
 												)}
 											</div>
 											<div className="flex-1 min-w-0">
-												<p className="text-sm font-semibold text-white truncate">
+												<p className="text-lg font-semibold text-black truncate">
 													{user?.fullname ||
 														user?.username ||
-														"Username"}
+														"Username"}{" "}
+													(<span className="font-semibold text-yellow-500 ">
+														{user?.user_role === 'dosen' ? 'dosen' : user?.user_role === 'mahasiswa' ? 'mahasiswa' : 'Error'}
+													</span>)
 												</p>
-												<p className="text-xs text-gray-400 truncate">
+												<p className="text-md text-gray-600 truncate">
 													{user?.email ||
 														"user@gmail.com"}
 												</p>
@@ -362,15 +363,15 @@ const Navbar: React.FC = () => {
 									</div>
 									<Link
 										href="/profil"
-										className="flex items-center px-4 py-3 text-base text-white hover:bg-gray-800/50 rounded-lg transition-all"
+										className="flex items-center px-4 py-3 text-base text-black hover:bg-yellow-500 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 group"
 										onClick={() => setShowMobileMenu(false)}
 									>
 										<PencilSimple
-											className="w-5 h-5 text-blue-400"
+											className="w-5 h-5 text-black transition-transform duration-300 group-hover:rotate-12"
 											weight="bold"
 										/>
 										<span className="ml-3">
-											Edit Profil
+											Lihat Profil
 										</span>
 									</Link>
 									<button
@@ -378,10 +379,10 @@ const Navbar: React.FC = () => {
 											handleLogout();
 											setShowMobileMenu(false);
 										}}
-										className="flex items-center w-full px-4 py-3 text-base text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+										className="flex items-center w-full px-4 py-3 text-base text-red-500 hover:bg-red-500 hover:text-black rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-95 group"
 									>
 										<SignOut
-											className="w-5 h-5"
+											className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
 											weight="bold"
 										/>
 										<span className="ml-3">Keluar</span>
@@ -391,7 +392,7 @@ const Navbar: React.FC = () => {
 								<div className="pt-2">
 									<Link
 										href="/masuk"
-										className="flex items-center justify-center px-4 py-3 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-lg transition-all shadow-md"
+										className="flex items-center justify-center px-4 py-3 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95 shadow-md"
 										onClick={() => setShowMobileMenu(false)}
 									>
 										<span className="ml-2">

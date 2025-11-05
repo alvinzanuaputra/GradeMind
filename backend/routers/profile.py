@@ -38,11 +38,11 @@ async def get_my_profile(
 ):
     return ProfileResponse(
         id=current_user.id,
-        username=current_user.username,
+        username=current_user.username, # type: ignore
         email=current_user.email,
-        fullname=current_user.fullname,
+        fullname=current_user.fullname, # type: ignore
         user_role=current_user.user_role.value,
-        profile_picture=current_user.profile_picture
+        profile_picture=current_user.profile_picture # type: ignore
     )
 
 @router.put("/me", response_model=ProfileResponse)
@@ -53,26 +53,26 @@ async def update_my_profile(
 ):
     if request.email is not None:
         result = await db.execute(
-            select(User).where(User.email == request.email, User.id != current_user.id)
+            select(User).where(User.email == request.email, User.id != current_user.id) # type: ignore
         )
         existing_user = result.scalar_one_or_none()
         if existing_user:
-            raise HTTPException(status_code=400, detail="Email already registered")
+            raise HTTPException(status_code=400, detail="Email sudah digunakan oleh pengguna lain")
         current_user.email = request.email
     
     if request.fullname is not None:
-        current_user.fullname = request.fullname
+        current_user.fullname = request.fullname # type: ignore
     
     await db.commit()
     await db.refresh(current_user)
     
     return ProfileResponse(
         id=current_user.id,
-        username=current_user.username,
+        username=current_user.username, # type: ignore
         email=current_user.email,
-        fullname=current_user.fullname,
+        fullname=current_user.fullname, # type: ignore
         user_role=current_user.user_role.value,
-        profile_picture=current_user.profile_picture
+        profile_picture=current_user.profile_picture # type: ignore
     )
 
 @router.post("/me/change-password", status_code=status.HTTP_200_OK)
@@ -84,9 +84,9 @@ async def change_password(
     if not pwd_context.verify(request.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Password saat ini salah")
     
-    if len(request.new_password) < 6:
-        raise HTTPException(status_code=400, detail="Password harus minimal 6 karakter")
-    
+    if len(request.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password harus minimal 8 karakter")
+
     current_user.hashed_password = pwd_context.hash(request.new_password)
     await db.commit()
     
@@ -98,13 +98,12 @@ async def upload_profile_photo(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
-    if not file.content_type.startswith("image/"):
+    if not file.content_type.startswith("image/"): # type: ignore
         raise HTTPException(status_code=400, detail="File harus berupa gambar")
     
     file_path = f"uploads/profiles/{current_user.id}_{file.filename}"
     
-    current_user.profile_picture = file_path
+    current_user.profile_picture = file_path # type: ignore
     await db.commit()
     
     return {"message": "Foto profil berhasil diunggah", "photo_url": file_path}
-

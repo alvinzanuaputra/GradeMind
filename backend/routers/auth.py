@@ -12,29 +12,21 @@ import os
 import jwt
 
 router = APIRouter()
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 class LoginRequest(BaseModel):
-    email: str
+    email: str  # Bisa berisi email atau username
     password: str
-
-
+    
 class LoginResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserRead
-
-
 class RegisterResponse(BaseModel):
     message: str
     user: UserRead
 
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
-
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
@@ -43,30 +35,35 @@ def get_password_hash(password: str) -> str:
 @router.post("/token")
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    request: Request = None,
+    request: Request = None, # type: ignore
     session: AsyncSession = Depends(get_session)
 ):
-    result = await session.execute(select(User).where(User.email == form_data.username))
+    # Coba login dengan email
+    result = await session.execute(select(User).where(User.email == form_data.username)) # type: ignore
     user = result.scalar_one_or_none()
+    # Jika tidak ditemukan dengan email, coba dengan username
+    if not user:
+        result = await session.execute(select(User).where(User.username == form_data.username))
+        user = result.scalar_one_or_none()
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Email/Username atau password salah",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Email/Username atau password salah",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is inactive",
+            detail="Akun pengguna tidak aktif",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -104,7 +101,7 @@ async def register_user(
     user_data: UserCreate,
     session: AsyncSession = Depends(get_session)
 ):
-    result = await session.execute(select(User).where(User.email == user_data.email))
+    result = await session.execute(select(User).where(User.email == user_data.email)) # type: ignore
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -118,21 +115,31 @@ async def register_user(
             detail="Username sudah terpakai"
         )
     
+    # Validasi NRP jika ada (tidak boleh duplikat)
+    if user_data.nrp:
+        result = await session.execute(select(User).where(User.nrp == user_data.nrp))
+        if result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="NRP sudah terdaftar"
+            )
+    
     hashed_password = get_password_hash(user_data.password)
     
     new_user = User(
-        email=user_data.email,
-        fullname=user_data.fullname,
-        username=user_data.username,
-        user_role=UserRole.MAHASISWA,
-        notelp=user_data.notelp,
-        institution=user_data.institution,
-        biografi=user_data.biografi,
-        profile_picture=user_data.profile_picture,
-        hashed_password=hashed_password,
-        is_active=True,
-        is_verified=False,
-        is_superuser=False,
+        email=user_data.email, # type: ignore
+        fullname=user_data.fullname, # type: ignore
+        username=user_data.username, # type: ignore
+        user_role=user_data.user_role, # type: ignore
+        notelp=user_data.notelp, # type: ignore
+        nrp=user_data.nrp, # type: ignore
+        institution=user_data.institution, # type: ignore
+        biografi=user_data.biografi, # type: ignore
+        profile_picture=user_data.profile_picture, # type: ignore
+        hashed_password=hashed_password, # type: ignore
+        is_active=True, # type: ignore
+        is_verified=False, # type: ignore
+        is_superuser=False, # type: ignore
     )
     
     session.add(new_user)
@@ -142,20 +149,21 @@ async def register_user(
     user_read = UserRead(
         id=new_user.id,
         email=new_user.email,
-        fullname=new_user.fullname,
-        username=new_user.username,
-        user_role=new_user.user_role,
-        notelp=new_user.notelp,
-        institution=new_user.institution,
-        biografi=new_user.biografi,
-        profile_picture=new_user.profile_picture,
-        is_active=new_user.is_active,
-        is_verified=new_user.is_verified,
-        is_superuser=new_user.is_superuser,
+        fullname=new_user.fullname, # type: ignore
+        username=new_user.username, # type: ignore
+        user_role=new_user.user_role, # type: ignore
+        notelp=new_user.notelp, # type: ignore
+        nrp=new_user.nrp, # type: ignore
+        institution=new_user.institution, # type: ignore
+        biografi=new_user.biografi, # type: ignore
+        profile_picture=new_user.profile_picture, # type: ignore
+        is_active=new_user.is_active, # type: ignore
+        is_verified=new_user.is_verified, # type: ignore
+        is_superuser=new_user.is_superuser, # type: ignore
     )
     
     return RegisterResponse(
-        message="User terdaftar berhasil",
+        message="Pengguna terdaftar berhasil",
         user=user_read
     )
 
@@ -166,25 +174,31 @@ async def login_user(
     request: Request,
     session: AsyncSession = Depends(get_session)
 ):
-    result = await session.execute(select(User).where(User.email == login_data.email))
+    # Coba login dengan email
+    result = await session.execute(select(User).where(User.email == login_data.email)) # type: ignore
     user = result.scalar_one_or_none()
+    
+    # Jika tidak ditemukan dengan email, coba dengan username
+    if not user:
+        result = await session.execute(select(User).where(User.username == login_data.email))
+        user = result.scalar_one_or_none()
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Email/Username atau password salah"
         )
     
     if not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Email/Username atau password salah"
         )
     
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is inactive"
+            detail="Akun pengguna tidak aktif"
         )
     
     jwt_strategy = get_jwt_strategy()
@@ -209,23 +223,22 @@ async def login_user(
     
     session.add(new_session)
     await session.commit()
-    
-    is_oauth_user = not user.hashed_password or user.hashed_password == ""
+    # is_oauth_user = not user.hashed_password or user.hashed_password == ""
     
     user_read = UserRead(
         id=user.id,
         email=user.email,
-        fullname=user.fullname,
-        username=user.username,
-        user_role=user.user_role,
-        notelp=user.notelp,
-        institution=user.institution,
-        biografi=user.biografi,
-        profile_picture=user.profile_picture,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
+        fullname=user.fullname, # type: ignore
+        username=user.username, # type: ignore
+        user_role=user.user_role, # type: ignore
+        notelp=user.notelp, # type: ignore
+        institution=user.institution, # type: ignore
+        biografi=user.biografi, # type: ignore
+        profile_picture=user.profile_picture, # type: ignore
+        is_active=user.is_active, # type: ignore
+        is_verified=user.is_verified, # type: ignore
         is_superuser=user.is_superuser,
-        is_oauth_user=is_oauth_user,
+        # is_oauth_user=is_oauth_user,
     )
     
     return LoginResponse(
@@ -243,14 +256,14 @@ async def get_current_user(
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing"
+            detail="Hilangnya header otorisasi"
         )
     
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format"
+            detail="Format header otorisasi tidak valid"
         )
     
     token = parts[1]
@@ -259,7 +272,7 @@ async def get_current_user(
         SECRET = os.getenv("SECRET_KEY")
         payload = jwt.decode(
             token, 
-            SECRET, 
+            SECRET, # type: ignore 
             algorithms=["HS256"],
             audience=["fastapi-users:auth"]
         )
@@ -268,17 +281,17 @@ async def get_current_user(
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload"
+                detail="Token tidak valid"
             )
         
-        stmt = select(User).where(User.id == int(user_id))
+        stmt = select(User).where(User.id == int(user_id)) # type: ignore
         result = await session.execute(stmt)
         user = result.scalar_one_or_none()
         
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
+                detail="Pengguna tidak ditemukan"
             )
         
         is_oauth_user = not user.hashed_password or user.hashed_password == ""
@@ -286,36 +299,35 @@ async def get_current_user(
         return UserRead(
             id=user.id,
             email=user.email,
-            fullname=user.fullname,
-            username=user.username,
-            user_role=user.user_role,
-            notelp=user.notelp,
-            institution=user.institution,
-            biografi=user.biografi,
-            profile_picture=user.profile_picture,
+            fullname=user.fullname, # type: ignore
+            username=user.username, # type: ignore
+            user_role=user.user_role, # type: ignore
+            notelp=user.notelp, # type: ignore
+            institution=user.institution, # type: ignore
+            biografi=user.biografi, # type: ignore
+            profile_picture=user.profile_picture, # type: ignore
             is_active=user.is_active,
             is_verified=user.is_verified,
             is_superuser=user.is_superuser,
-            is_oauth_user=is_oauth_user,
+            # is_oauth_user=is_oauth_user,
         )
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired"
+            detail="Token Kadaluarsa"
         )
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Token tidak valid"
         )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Token tidak valid"
         )
-
 
 @router.post("/logout")
 async def logout_user(
@@ -330,12 +342,9 @@ async def logout_user(
             )
         )
         user_session = result.scalar_one_or_none()
-        
         if user_session:
-            user_session.is_active = False
-            await session.commit()
-        
+            user_session.is_active = False # type: ignore
+            await session.commit() 
         return {"message": "Logout berhasil"}
     except Exception:
-        return {"message": "Logout berhasil"}
-
+        return {"message": "Logout gagal"}

@@ -22,4 +22,3 @@ class AssignmentSubmission(Base):
     student = relationship("User", back_populates="assignment_submissions")
     question_answers = relationship("QuestionAnswer", back_populates="submission", cascade="all, delete-orphan")
     nilai = relationship("Nilai", back_populates="submission", uselist=False, cascade="all, delete-orphan")
-

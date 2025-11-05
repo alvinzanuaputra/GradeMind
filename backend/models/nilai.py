@@ -21,4 +21,3 @@ class Nilai(Base):
     graded_at = Column(DateTime, default=datetime.utcnow)
 
     submission = relationship("AssignmentSubmission", back_populates="nilai")
-
